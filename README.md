@@ -9,7 +9,7 @@ RapidX agent skills for configuring and using the RapidX CLI and MCP server.
 
 ## Install With npx skills
 
-Install both skills into the current Codex workspace:
+If the repository is public, install both skills into the current Codex workspace:
 
 ```bash
 npx skills add LiquidityTech/ltp-rapidx-skill \
@@ -18,10 +18,19 @@ npx skills add LiquidityTech/ltp-rapidx-skill \
   -a codex -y
 ```
 
+If the repository is private, use the SSH URL so Git can use your SSH key:
+
+```bash
+npx skills add git@github.com:LiquidityTech/ltp-rapidx-skill.git \
+  --skill ltp-rapidx-config \
+  --skill ltp-rapidx-trading \
+  -a codex -y
+```
+
 Install globally for Codex:
 
 ```bash
-npx skills add LiquidityTech/ltp-rapidx-skill \
+npx skills add git@github.com:LiquidityTech/ltp-rapidx-skill.git \
   --skill ltp-rapidx-config \
   --skill ltp-rapidx-trading \
   -a codex -g -y
