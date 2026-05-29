@@ -1,0 +1,190 @@
+---
+name: ltp-rapidx-config
+description: Use when an agent needs to install or configure RapidX CLI/MCP access, set production LTP credentials, locate the agent workspace MCP config, review integration, discover tools, or run read-only self-checks.
+---
+
+# RapidX Config
+
+Use this skill for setup and integration review only. Use `ltp-rapidx-trading` for account, market, order, position, algo, and live trading workflows.
+
+## Scope
+
+- Configure the published RapidX CLI package as the single runtime entrypoint.
+- Configure MCP by launching `rapidx mcp serve` from the agent's own workspace MCP config.
+- Verify real tool availability with read-only calls.
+- Produce an integration review with masked credentials and actual evidence.
+
+Do not describe how to install this skill inside the skill itself. Assume the skill has already been installed by the agent host.
+
+## Workspace First
+
+Before changing MCP config, identify the agent host workspace that will run RapidX:
+
+1. State the active agent workspace path from session/runtime context.
+2. Identify the workspace-local MCP config file read by this same agent host.
+3. If the MCP config path is ambiguous, inspect the confirmed workspace for existing MCP settings.
+4. If still ambiguous, ask the user which MCP config file this agent should edit.
+5. Add or update `mcpServers.ltp-rapidx` only after the workspace and config path are known.
+
+Never assume the source repository root, filesystem root, or a global home config is the right target.
+
+## Credential Intake
+
+Ask whether the user wants to provide credentials as a user-provided chat secret. This is the default path for non-programmers, but state the risk first: even protected chat-secret flows are controlled by the agent host and may be subject to that host's retention, access, or collaboration settings.
+
+Offer alternatives when the user wants stronger isolation:
+
+- Local shell environment variables.
+- Enterprise or OS secret manager referenced by the MCP host.
+
+Rules:
+
+- Required variables are `LTP_ACCESS_KEY`, `LTP_SECRET_KEY`, and `LTP_API_HOST`.
+- Default production host is `https://api.liquiditytech.com`.
+- Do not use `LTP_BASE_URL`, `RAPIDX_BASE_URL`, or `RAPIDX_PORTFOLIO_*`.
+- Do not ask for or echo complete keys in normal chat text when a chat-secret mechanism is available.
+- Never print full keys in logs, config review, test output, or evidence. Use masked values only.
+
+## CLI Install
+
+RapidX is published as an npm CLI package. Configure the GitHub Packages registry, then install the CLI:
+
+```bash
+npm config set @liquiditytech:registry https://npm.pkg.github.com
+npm install -g @liquiditytech/rapidx-cli
+```
+
+Verify the installed CLI:
+
+```bash
+rapidx --version
+rapidx schema --json
+rapidx self-check --read-only --json
+```
+
+For CLI-only agents, use direct `rapidx ... --json` commands. Do not create temporary bridge scripts, directory-changing shell chains, or shell command chaining for MCP access.
+
+## MCP Config
+
+MCP is started by the CLI. Add this server to the agent workspace MCP config:
+
+```json
+{
+  "mcpServers": {
+    "ltp-rapidx": {
+      "command": "rapidx",
+      "args": ["mcp", "serve"],
+      "env": {
+        "LTP_ACCESS_KEY": "<user-provided-secret-or-env-reference>",
+        "LTP_SECRET_KEY": "<user-provided-secret-or-env-reference>",
+        "LTP_API_HOST": "https://api.liquiditytech.com"
+      }
+    }
+  }
+}
+```
+
+The MCP server command must be `rapidx` with args `["mcp", "serve"]`. Do not point MCP tools at one-off CLI commands and do not add shell script wrappers.
+
+## Expected MCP Tools
+
+Healthy MCP discovery exposes 33 tools:
+
+```text
+Discovery: ltp-rapidx/tools, ltp-rapidx/self-check
+Market:    ltp-rapidx/market/get-ticker, ltp-rapidx/market/get-orderbook, ltp-rapidx/market/get-klines,
+           ltp-rapidx/market/get-funding-rate, ltp-rapidx/market/get-mark-price,
+           ltp-rapidx/market/get-symbol-info, ltp-rapidx/market/get-open-interest
+Account:   ltp-rapidx/account/overview, ltp-rapidx/account/balance, ltp-rapidx/account/set-position-mode
+Trade:     ltp-rapidx/trade/preview, ltp-rapidx/trade/verify-live
+Order:     ltp-rapidx/order/preview, ltp-rapidx/order/place-preview,
+           ltp-rapidx/order/amend-preview, ltp-rapidx/order/cancel-preview,
+           ltp-rapidx/order/place, ltp-rapidx/order/amend, ltp-rapidx/order/cancel,
+           ltp-rapidx/order/get, ltp-rapidx/order/list, ltp-rapidx/order/history
+Position:  ltp-rapidx/position/list, ltp-rapidx/position/history,
+           ltp-rapidx/position/close, ltp-rapidx/position/set-leverage
+Algo:      ltp-rapidx/algo/place, ltp-rapidx/algo/amend, ltp-rapidx/algo/cancel, ltp-rapidx/algo/list
+Compat:    ltp-rapidx/trading-verification
+```
+
+Legacy snake_case names such as `get_ticker`, `place_order`, or `list_positions` indicate a stale integration and should not be used.
+
+## Read-Only Self-Check
+
+The self-check proves the configured runtime is real. Do not simulate results, invent balances, or claim success from documentation alone.
+
+Run the quick check:
+
+1. Discover tools through the MCP host and confirm the 33-tool inventory.
+2. Call `ltp-rapidx/self-check` with read-only scope when the host supports tool invocation.
+3. Call one public market route, preferably `ltp-rapidx/market/get-ticker` for `BINANCE_PERP_BTC_USDT`.
+4. Call read routes for account overview, portfolio balance, open orders, positions, and algo orders.
+
+Run the deeper review when asked for integration review or self-validation:
+
+```text
+1. ltp-rapidx/tools
+2. ltp-rapidx/self-check
+3. ltp-rapidx/market/get-ticker
+4. ltp-rapidx/market/get-orderbook
+5. ltp-rapidx/market/get-klines
+6. ltp-rapidx/market/get-funding-rate
+7. ltp-rapidx/market/get-mark-price
+8. ltp-rapidx/market/get-symbol-info
+9. ltp-rapidx/market/get-open-interest
+10. ltp-rapidx/account/overview
+11. ltp-rapidx/account/balance with mode="portfolio"
+12. ltp-rapidx/account/balance with mode="account" only to classify key scope
+13. ltp-rapidx/order/list
+14. ltp-rapidx/order/history
+15. ltp-rapidx/order/get with a deliberately nonexistent self-check order id
+16. ltp-rapidx/position/list
+17. ltp-rapidx/position/history
+18. ltp-rapidx/algo/list
+```
+
+`mode="account"` may return a real permission or key-scope error for portfolio-scoped credentials. Treat that as `EXPECTED_ERROR`, not as a failed portfolio integration.
+
+## Result Classes
+
+- `PASS`: actual tool or command returned a successful real response.
+- `EXPECTED_ERROR`: route is live and returned a real business, permission, unsupported-mode, or deliberate not-found error.
+- `FAIL`: tool is missing, startup/auth/network failed, response is malformed, or a required call timed out.
+- `NOT_VERIFIED`: the agent could not invoke the tool or the user declined credentials.
+
+Every row must include `toolOrCommandEvidence` or equivalent observed code/message evidence. Empty order, position, or history lists are `PASS` if the response is real and well formed.
+
+## Integration Review Output
+
+Return this structure when asked to review setup:
+
+```markdown
+# RapidX Integration Review
+
+## Verdict
+- status: PASS / PARTIAL / FAIL / NOT_VERIFIED
+- main issues:
+
+## Workspace And Config
+- agent workspace:
+- MCP config path:
+- MCP command: rapidx mcp serve
+- CLI package:
+- host:
+- credentials: configured and masked / missing / not verified
+
+## Tool Discovery
+- expected MCP tools: 33
+- actual MCP tools:
+- missing tools:
+- legacy tools found:
+
+## Read-Only Checks
+| check | result | evidence |
+| --- | --- | --- |
+
+## Required Fixes
+- ...
+```
+
+Switch to `ltp-rapidx-trading` for any write verification or live trading test.
