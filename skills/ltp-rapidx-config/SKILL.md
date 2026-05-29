@@ -24,7 +24,7 @@ Before changing MCP config, identify the agent host workspace that will run Rapi
 2. Identify the workspace-local MCP config file read by this same agent host.
 3. If the MCP config path is ambiguous, inspect the confirmed workspace for existing MCP settings.
 4. If still ambiguous, ask the user which MCP config file this agent should edit.
-5. Add or update `mcpServers.ltp-rapidx` only after the workspace and config path are known.
+5. Add or update `mcpServers.rapidx` only after the workspace and config path are known.
 
 Never assume the source repository root, filesystem root, or a global home config is the right target.
 
@@ -80,7 +80,7 @@ MCP is started by the CLI. Add this server to the agent workspace MCP config:
 ```json
 {
   "mcpServers": {
-    "ltp-rapidx": {
+    "rapidx": {
       "command": "rapidx",
       "args": ["mcp", "serve"],
       "env": {
@@ -100,20 +100,20 @@ The MCP server command should be `rapidx` with args `["mcp", "serve"]` when `rap
 Healthy MCP discovery exposes 33 tools:
 
 ```text
-Discovery: ltp-rapidx/tools, ltp-rapidx/self-check
-Market:    ltp-rapidx/market/get-ticker, ltp-rapidx/market/get-orderbook, ltp-rapidx/market/get-klines,
-           ltp-rapidx/market/get-funding-rate, ltp-rapidx/market/get-mark-price,
-           ltp-rapidx/market/get-symbol-info, ltp-rapidx/market/get-open-interest
-Account:   ltp-rapidx/account/overview, ltp-rapidx/account/balance, ltp-rapidx/account/set-position-mode
-Trade:     ltp-rapidx/trade/preview, ltp-rapidx/trade/verify-live
-Order:     ltp-rapidx/order/preview, ltp-rapidx/order/place-preview,
-           ltp-rapidx/order/amend-preview, ltp-rapidx/order/cancel-preview,
-           ltp-rapidx/order/place, ltp-rapidx/order/amend, ltp-rapidx/order/cancel,
-           ltp-rapidx/order/get, ltp-rapidx/order/list, ltp-rapidx/order/history
-Position:  ltp-rapidx/position/list, ltp-rapidx/position/history,
-           ltp-rapidx/position/close, ltp-rapidx/position/set-leverage
-Algo:      ltp-rapidx/algo/place, ltp-rapidx/algo/amend, ltp-rapidx/algo/cancel, ltp-rapidx/algo/list
-Compat:    ltp-rapidx/trading-verification
+Discovery: rapidx/tools, rapidx/self-check
+Market:    rapidx/market/get-ticker, rapidx/market/get-orderbook, rapidx/market/get-klines,
+           rapidx/market/get-funding-rate, rapidx/market/get-mark-price,
+           rapidx/market/get-symbol-info, rapidx/market/get-open-interest
+Account:   rapidx/account/overview, rapidx/account/balance, rapidx/account/set-position-mode
+Trade:     rapidx/trade/preview, rapidx/trade/verify-live
+Order:     rapidx/order/preview, rapidx/order/place-preview,
+           rapidx/order/amend-preview, rapidx/order/cancel-preview,
+           rapidx/order/place, rapidx/order/amend, rapidx/order/cancel,
+           rapidx/order/get, rapidx/order/list, rapidx/order/history
+Position:  rapidx/position/list, rapidx/position/history,
+           rapidx/position/close, rapidx/position/set-leverage
+Algo:      rapidx/algo/place, rapidx/algo/amend, rapidx/algo/cancel, rapidx/algo/list
+Compat:    rapidx/trading-verification
 ```
 
 Legacy snake_case names such as `get_ticker`, `place_order`, or `list_positions` indicate a stale integration and should not be used.
@@ -125,8 +125,8 @@ The self-check proves the configured runtime is real. Do not simulate results, i
 Run the quick check:
 
 1. Discover tools through the MCP host and confirm the 33-tool inventory.
-2. Call `ltp-rapidx/self-check` with read-only scope when the host supports tool invocation.
-3. Call one public market route, preferably `ltp-rapidx/market/get-ticker` for `BINANCE_PERP_BTC_USDT`.
+2. Call `rapidx/self-check` with read-only scope when the host supports tool invocation.
+3. Call one public market route, preferably `rapidx/market/get-ticker` for `BINANCE_PERP_BTC_USDT`.
 4. Call read routes for account overview, portfolio balance, open orders, positions, and algo orders.
 
 If the host cannot invoke MCP tools yet, run equivalent CLI read-only checks and mark MCP tool invocation as `NOT_VERIFIED`; do not convert CLI success into MCP success.
@@ -134,24 +134,24 @@ If the host cannot invoke MCP tools yet, run equivalent CLI read-only checks and
 Run the deeper review when asked for integration review or self-validation:
 
 ```text
-1. ltp-rapidx/tools
-2. ltp-rapidx/self-check
-3. ltp-rapidx/market/get-ticker
-4. ltp-rapidx/market/get-orderbook
-5. ltp-rapidx/market/get-klines
-6. ltp-rapidx/market/get-funding-rate
-7. ltp-rapidx/market/get-mark-price
-8. ltp-rapidx/market/get-symbol-info
-9. ltp-rapidx/market/get-open-interest
-10. ltp-rapidx/account/overview
-11. ltp-rapidx/account/balance with mode="portfolio"
-12. ltp-rapidx/account/balance with mode="account" only to classify key scope
-13. ltp-rapidx/order/list
-14. ltp-rapidx/order/history
-15. ltp-rapidx/order/get with a deliberately nonexistent self-check order id
-16. ltp-rapidx/position/list
-17. ltp-rapidx/position/history
-18. ltp-rapidx/algo/list
+1. rapidx/tools
+2. rapidx/self-check
+3. rapidx/market/get-ticker
+4. rapidx/market/get-orderbook
+5. rapidx/market/get-klines
+6. rapidx/market/get-funding-rate
+7. rapidx/market/get-mark-price
+8. rapidx/market/get-symbol-info
+9. rapidx/market/get-open-interest
+10. rapidx/account/overview
+11. rapidx/account/balance with mode="portfolio"
+12. rapidx/account/balance with mode="account" only to classify key scope
+13. rapidx/order/list
+14. rapidx/order/history
+15. rapidx/order/get with a deliberately nonexistent self-check order id
+16. rapidx/position/list
+17. rapidx/position/history
+18. rapidx/algo/list
 ```
 
 `mode="account"` may return a real permission or key-scope error for portfolio-scoped credentials. Treat that as `EXPECTED_ERROR`, not as a failed portfolio integration.

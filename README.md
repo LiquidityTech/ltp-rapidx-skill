@@ -45,7 +45,7 @@ The skills guide the agent to install the npm CLI package and configure MCP with
 ```json
 {
   "mcpServers": {
-    "ltp-rapidx": {
+    "rapidx": {
       "command": "rapidx",
       "args": ["mcp", "serve"],
       "env": {

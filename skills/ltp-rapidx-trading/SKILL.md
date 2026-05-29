@@ -20,50 +20,50 @@ Use this skill after `ltp-rapidx-config` has confirmed RapidX CLI/MCP access. Pr
 
 ## Current MCP Surface
 
-Use `ltp-rapidx/tools` for the authoritative runtime schema. Current normal-use tool names are:
+Use `rapidx/tools` for the authoritative runtime schema. Current normal-use tool names are:
 
 ```text
-Market:   ltp-rapidx/market/get-ticker, ltp-rapidx/market/get-orderbook,
-          ltp-rapidx/market/get-klines, ltp-rapidx/market/get-funding-rate,
-          ltp-rapidx/market/get-mark-price, ltp-rapidx/market/get-symbol-info,
-          ltp-rapidx/market/get-open-interest
-Account:  ltp-rapidx/account/overview, ltp-rapidx/account/balance,
-          ltp-rapidx/account/set-position-mode
-Trade:    ltp-rapidx/trade/preview, ltp-rapidx/trade/verify-live
-Order:    ltp-rapidx/order/place-preview, ltp-rapidx/order/amend-preview,
-          ltp-rapidx/order/cancel-preview, ltp-rapidx/order/place,
-          ltp-rapidx/order/amend, ltp-rapidx/order/cancel,
-          ltp-rapidx/order/get, ltp-rapidx/order/list, ltp-rapidx/order/history
-Position: ltp-rapidx/position/list, ltp-rapidx/position/history,
-          ltp-rapidx/position/close, ltp-rapidx/position/set-leverage
-Algo:     ltp-rapidx/algo/place, ltp-rapidx/algo/amend,
-          ltp-rapidx/algo/cancel, ltp-rapidx/algo/list
+Market:   rapidx/market/get-ticker, rapidx/market/get-orderbook,
+          rapidx/market/get-klines, rapidx/market/get-funding-rate,
+          rapidx/market/get-mark-price, rapidx/market/get-symbol-info,
+          rapidx/market/get-open-interest
+Account:  rapidx/account/overview, rapidx/account/balance,
+          rapidx/account/set-position-mode
+Trade:    rapidx/trade/preview, rapidx/trade/verify-live
+Order:    rapidx/order/place-preview, rapidx/order/amend-preview,
+          rapidx/order/cancel-preview, rapidx/order/place,
+          rapidx/order/amend, rapidx/order/cancel,
+          rapidx/order/get, rapidx/order/list, rapidx/order/history
+Position: rapidx/position/list, rapidx/position/history,
+          rapidx/position/close, rapidx/position/set-leverage
+Algo:     rapidx/algo/place, rapidx/algo/amend,
+          rapidx/algo/cancel, rapidx/algo/list
 ```
 
-`ltp-rapidx/order/preview` and `ltp-rapidx/trading-verification` are compatibility tools. Prefer `ltp-rapidx/order/place-preview` and `ltp-rapidx/trade/verify-live` in new workflows.
+`rapidx/order/preview` and `rapidx/trading-verification` are compatibility tools. Prefer `rapidx/order/place-preview` and `rapidx/trade/verify-live` in new workflows.
 
 ## Read Workflow
 
 Before making trading decisions, refresh state:
 
 ```text
-1. ltp-rapidx/account/overview
-2. ltp-rapidx/account/balance with mode="portfolio"
-3. ltp-rapidx/order/list
-4. ltp-rapidx/position/list
-5. ltp-rapidx/algo/list
+1. rapidx/account/overview
+2. rapidx/account/balance with mode="portfolio"
+3. rapidx/order/list
+4. rapidx/position/list
+5. rapidx/algo/list
 ```
 
 For a symbol, refresh market data:
 
 ```text
-1. ltp-rapidx/market/get-symbol-info
-2. ltp-rapidx/market/get-ticker
-3. ltp-rapidx/market/get-orderbook
-4. ltp-rapidx/market/get-mark-price
-5. ltp-rapidx/market/get-klines
-6. ltp-rapidx/market/get-funding-rate      # PERP only
-7. ltp-rapidx/market/get-open-interest     # PERP only
+1. rapidx/market/get-symbol-info
+2. rapidx/market/get-ticker
+3. rapidx/market/get-orderbook
+4. rapidx/market/get-mark-price
+5. rapidx/market/get-klines
+6. rapidx/market/get-funding-rate      # PERP only
+7. rapidx/market/get-open-interest     # PERP only
 ```
 
 Use symbol format `{EXCHANGE}_{TYPE}_{BASE}_{QUOTE}`, for example `BINANCE_PERP_BTC_USDT` or `OKX_PERP_BTC_USDT`. For OKX perpetuals, quantity is contract count; inspect symbol info before placing or amending orders.
@@ -84,32 +84,32 @@ If the preview response does not include `confirmation.submitToken`, do not subm
 Order placement:
 
 ```text
-ltp-rapidx/order/place-preview
-ltp-rapidx/order/place
-ltp-rapidx/order/get or ltp-rapidx/order/list
+rapidx/order/place-preview
+rapidx/order/place
+rapidx/order/get or rapidx/order/list
 ```
 
 Order amend:
 
 ```text
-ltp-rapidx/order/amend-preview
-ltp-rapidx/order/amend
-ltp-rapidx/order/get or ltp-rapidx/order/list
+rapidx/order/amend-preview
+rapidx/order/amend
+rapidx/order/get or rapidx/order/list
 ```
 
 Order cancel:
 
 ```text
-ltp-rapidx/order/cancel-preview
-ltp-rapidx/order/cancel
-ltp-rapidx/order/list
+rapidx/order/cancel-preview
+rapidx/order/cancel
+rapidx/order/list
 ```
 
 Non-order writes:
 
 ```text
-ltp-rapidx/trade/preview with targetCapabilityId
-target tool, such as ltp-rapidx/position/set-leverage
+rapidx/trade/preview with targetCapabilityId
+target tool, such as rapidx/position/set-leverage
 matching read-back tool
 ```
 
@@ -126,27 +126,27 @@ Common `targetCapabilityId` values are `position.set-leverage`, `position.close`
 
 ## Algo Orders
 
-Use preview/submit for `ltp-rapidx/algo/place`, `ltp-rapidx/algo/amend`, and `ltp-rapidx/algo/cancel`.
+Use preview/submit for `rapidx/algo/place`, `rapidx/algo/amend`, and `rapidx/algo/cancel`.
 
 Before placing TPSL or conditional orders:
 
 - Confirm target symbol, side, quantity, trigger price, stop/take-profit intent, and position side if hedge mode is used.
 - For TPSL, require at least one valid take-profit or stop-loss trigger.
-- After submit, verify through `ltp-rapidx/algo/list`.
+- After submit, verify through `rapidx/algo/list`.
 
 ## Position And Account Risk Writes
 
 Use separate explicit consent for each:
 
-- `ltp-rapidx/position/set-leverage` changes future risk for the symbol.
-- `ltp-rapidx/account/set-position-mode` changes account position mode and can affect existing workflows.
-- `ltp-rapidx/position/close` is a real close-position action. Verify current position first.
+- `rapidx/position/set-leverage` changes future risk for the symbol.
+- `rapidx/account/set-position-mode` changes account position mode and can affect existing workflows.
+- `rapidx/position/close` is a real close-position action. Verify current position first.
 
 Do not test these writes as part of ordinary setup.
 
 ## Live Trading Verification
 
-Use `ltp-rapidx/trade/verify-live` only when the user explicitly asks for a small real-trade verification and authorizes symbol, exchange, amount cap, cleanup behavior, and test window.
+Use `rapidx/trade/verify-live` only when the user explicitly asks for a small real-trade verification and authorizes symbol, exchange, amount cap, cleanup behavior, and test window.
 
 The verification must include:
 
