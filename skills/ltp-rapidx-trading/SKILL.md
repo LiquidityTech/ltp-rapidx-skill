@@ -5,7 +5,7 @@ description: Use when an agent needs to operate RapidX through MCP or CLI for ac
 
 # RapidX Trading
 
-Use this skill after `ltp-rapidx-config` has confirmed RapidX CLI/MCP access. Prefer MCP tools when the agent host supports MCP. Use direct CLI commands only when MCP is unavailable.
+Use this skill after `ltp-rapidx-config` has confirmed the runtime path as `MCP_READY` or `CLI_ONLY_READY`. Prefer MCP tools only when the agent host is `MCP_READY`. Use direct CLI commands only when the confirmed path is `CLI_ONLY_READY`.
 
 ## Non-Negotiable Rules
 
@@ -17,6 +17,16 @@ Use this skill after `ltp-rapidx-config` has confirmed RapidX CLI/MCP access. Pr
 - Keep business parameters unchanged between preview and submit. If symbol, side, quantity, price, order id, leverage, or mode changes, create a new preview.
 - If a write times out or the result is uncertain, query state before retrying.
 - Never echo secrets.
+
+## Invocation Path
+
+Before any trading workflow, read the latest integration review from `ltp-rapidx-config` or run that skill first.
+
+- `MCP_READY`: use `rapidx/...` MCP tools and do not shell out to wrapper scripts.
+- `CLI_ONLY_READY`: use direct `rapidx ... --json` commands and do not claim MCP tools were called.
+- `NOT_VERIFIED` or only `CLI_READY`: stop and run config self-check before account, market, or trade workflows.
+
+Do not switch paths during a task without new evidence. If an MCP call fails after `MCP_READY`, mark MCP degraded and verify state before retrying or falling back to CLI.
 
 ## Current MCP Surface
 

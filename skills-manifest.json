@@ -8,7 +8,7 @@
     {
       "name": "ltp-rapidx-config",
       "path": "skills/ltp-rapidx-config/SKILL.md",
-      "sha256": "4460c41bf9fdf00b57dcf848d74a2fa48950a683eb981957bbc2d08577b4ccd2",
+      "sha256": "170adee116a7aa398babb92a178a07318c1142ff1a5bf688dea8936ca308a4b8",
       "compatibleCli": ">=1.0.0",
       "compatibleMcpSchema": ">=1.0.0",
       "purpose": "configuration, credential guidance, tool discovery, self-check, access review"
@@ -16,7 +16,7 @@
     {
       "name": "ltp-rapidx-trading",
       "path": "skills/ltp-rapidx-trading/SKILL.md",
-      "sha256": "06b0782bb8595e39e2948971a1554846ee7d964d19e1010999f1f78d413895ce",
+      "sha256": "015de0d1bdb2bc8ec85c7ce25da0f660b01146b81e1f348f10d52113f35b70ff",
       "compatibleCli": ">=1.0.0",
       "compatibleMcpSchema": ">=1.0.0",
       "purpose": "read queries, preview, real trading, status confirmation, small trade verification"

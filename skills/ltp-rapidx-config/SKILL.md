@@ -11,6 +11,7 @@ Use this skill for setup and integration review only. Use `ltp-rapidx-trading` f
 
 - Configure the published RapidX CLI package as the single runtime entrypoint.
 - Configure MCP by launching `rapidx mcp serve` from the agent's own workspace MCP config.
+- Classify whether this agent host is `MCP_READY`, `CLI_ONLY_READY`, or `NOT_VERIFIED`.
 - Verify real tool availability with read-only calls.
 - Produce an integration review with masked credentials and actual evidence.
 
@@ -73,6 +74,25 @@ rapidx self-check --read-only --json
 
 For CLI-only agents, use direct `rapidx ... --json` commands. Do not create temporary bridge scripts, directory-changing shell chains, or shell command chaining for MCP access.
 
+## Runtime Path Selection
+
+Classify the agent after CLI install and, when available, MCP configuration. Do not classify from agent product name or config file existence alone.
+
+Before install, only choose a candidate path:
+
+- If the host exposes workspace MCP config plus native tool discovery/call surfaces, attempt the MCP path.
+- If the host only exposes shell, exec, or terminal commands, use the CLI-only path.
+- If uncertain, install CLI first, run CLI self-check, and keep MCP as `NOT_VERIFIED` until MCP tools are actually callable.
+
+After install/config, set one status:
+
+- `CLI_READY`: `rapidx --version` and `rapidx schema --json` pass.
+- `MCP_READY`: `CLI_READY`, `initialize` returns `serverInfo.name=rapidx`, `tools/list` shows 33 `rapidx/...` tools, and `rapidx/tools` plus `rapidx/self-check` can be called as MCP tools.
+- `CLI_ONLY_READY`: `CLI_READY`, but the host cannot configure, discover, or call MCP tools.
+- `NOT_VERIFIED`: no real invocation evidence, or only a config file was edited.
+
+Writing `mcpServers.rapidx` is only an attempted MCP setup. It is not proof of MCP readiness. If MCP is not `MCP_READY`, mark MCP as `NOT_VERIFIED` and use direct `rapidx ... --json` commands.
+
 ## MCP Config
 
 MCP is started by the CLI. Add this server to the agent workspace MCP config:
@@ -124,10 +144,11 @@ The self-check proves the configured runtime is real. Do not simulate results, i
 
 Run the quick check:
 
-1. Discover tools through the MCP host and confirm the 33-tool inventory.
-2. Call `rapidx/self-check` with read-only scope when the host supports tool invocation.
-3. Call one public market route, preferably `rapidx/market/get-ticker` for `BINANCE_PERP_BTC_USDT`.
-4. Call read routes for account overview, portfolio balance, open orders, positions, and algo orders.
+1. Confirm `CLI_READY` with `rapidx --version` and `rapidx schema --json`.
+2. If attempting MCP, discover tools through the MCP host and confirm the 33-tool inventory.
+3. Call `rapidx/self-check` with read-only scope when the host supports tool invocation.
+4. Call one public market route, preferably `rapidx/market/get-ticker` for `BINANCE_PERP_BTC_USDT`.
+5. Call read routes for account overview, portfolio balance, open orders, positions, and algo orders.
 
 If the host cannot invoke MCP tools yet, run equivalent CLI read-only checks and mark MCP tool invocation as `NOT_VERIFIED`; do not convert CLI success into MCP success.
 
@@ -174,6 +195,7 @@ Return this structure when asked to review setup:
 
 ## Verdict
 - status: PASS / PARTIAL / FAIL / NOT_VERIFIED
+- runtime path: MCP_READY / CLI_ONLY_READY / NOT_VERIFIED
 - main issues:
 
 ## Workspace And Config
