@@ -32,6 +32,8 @@ Never assume the source repository root, filesystem root, or a global home confi
 
 Ask whether the user wants to provide credentials as a user-provided chat secret. This is the default path for non-programmers, but state the risk first: even protected chat-secret flows are controlled by the agent host and may be subject to that host's retention, access, or collaboration settings.
 
+If the agent host has a dedicated chat-secret UI, ask the user to create three secrets with the exact names `LTP_ACCESS_KEY`, `LTP_SECRET_KEY`, and `LTP_API_HOST`. If the host has no chat-secret UI, ask whether the user wants the agent to write masked-reference placeholders into MCP config or whether they prefer to set local environment variables manually.
+
 Offer alternatives when the user wants stronger isolation:
 
 - Local shell environment variables.
@@ -52,6 +54,13 @@ RapidX is published as an npm CLI package. Configure the GitHub Packages registr
 ```bash
 npm config set @liquiditytech:registry https://npm.pkg.github.com
 npm install -g @liquiditytech/rapidx-cli
+```
+
+If global install is not allowed, install in the confirmed agent workspace and use the workspace-local executable path in MCP config:
+
+```bash
+npm install @liquiditytech/rapidx-cli
+./node_modules/.bin/rapidx --version
 ```
 
 Verify the installed CLI:
@@ -84,7 +93,7 @@ MCP is started by the CLI. Add this server to the agent workspace MCP config:
 }
 ```
 
-The MCP server command must be `rapidx` with args `["mcp", "serve"]`. Do not point MCP tools at one-off CLI commands and do not add shell script wrappers.
+The MCP server command should be `rapidx` with args `["mcp", "serve"]` when `rapidx` is on the MCP host PATH. If PATH is not guaranteed, use the absolute path to the installed `rapidx` executable as `command` and keep args as `["mcp", "serve"]`. Do not point MCP tools at one-off CLI commands and do not add shell script wrappers.
 
 ## Expected MCP Tools
 
@@ -119,6 +128,8 @@ Run the quick check:
 2. Call `ltp-rapidx/self-check` with read-only scope when the host supports tool invocation.
 3. Call one public market route, preferably `ltp-rapidx/market/get-ticker` for `BINANCE_PERP_BTC_USDT`.
 4. Call read routes for account overview, portfolio balance, open orders, positions, and algo orders.
+
+If the host cannot invoke MCP tools yet, run equivalent CLI read-only checks and mark MCP tool invocation as `NOT_VERIFIED`; do not convert CLI success into MCP success.
 
 Run the deeper review when asked for integration review or self-validation:
 

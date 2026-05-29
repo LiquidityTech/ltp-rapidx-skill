@@ -20,20 +20,27 @@ Use this skill after `ltp-rapidx-config` has confirmed RapidX CLI/MCP access. Pr
 
 ## Current MCP Surface
 
-Use `ltp-rapidx/tools` for the authoritative runtime schema. Current normal-use tool groups are:
+Use `ltp-rapidx/tools` for the authoritative runtime schema. Current normal-use tool names are:
 
 ```text
-Market:   ltp-rapidx/market/get-ticker, get-orderbook, get-klines, get-funding-rate,
-          get-mark-price, get-symbol-info, get-open-interest
-Account:  ltp-rapidx/account/overview, account/balance, account/set-position-mode
-Trade:    ltp-rapidx/trade/preview, trade/verify-live
-Order:    ltp-rapidx/order/place-preview, amend-preview, cancel-preview,
-          order/place, order/amend, order/cancel, order/get, order/list, order/history
-Position: ltp-rapidx/position/list, position/history, position/close, position/set-leverage
-Algo:     ltp-rapidx/algo/place, algo/amend, algo/cancel, algo/list
+Market:   ltp-rapidx/market/get-ticker, ltp-rapidx/market/get-orderbook,
+          ltp-rapidx/market/get-klines, ltp-rapidx/market/get-funding-rate,
+          ltp-rapidx/market/get-mark-price, ltp-rapidx/market/get-symbol-info,
+          ltp-rapidx/market/get-open-interest
+Account:  ltp-rapidx/account/overview, ltp-rapidx/account/balance,
+          ltp-rapidx/account/set-position-mode
+Trade:    ltp-rapidx/trade/preview, ltp-rapidx/trade/verify-live
+Order:    ltp-rapidx/order/place-preview, ltp-rapidx/order/amend-preview,
+          ltp-rapidx/order/cancel-preview, ltp-rapidx/order/place,
+          ltp-rapidx/order/amend, ltp-rapidx/order/cancel,
+          ltp-rapidx/order/get, ltp-rapidx/order/list, ltp-rapidx/order/history
+Position: ltp-rapidx/position/list, ltp-rapidx/position/history,
+          ltp-rapidx/position/close, ltp-rapidx/position/set-leverage
+Algo:     ltp-rapidx/algo/place, ltp-rapidx/algo/amend,
+          ltp-rapidx/algo/cancel, ltp-rapidx/algo/list
 ```
 
-`ltp-rapidx/order/preview` and `ltp-rapidx/trading-verification` are compatibility tools. Prefer `order/place-preview` and `trade/verify-live` in new workflows.
+`ltp-rapidx/order/preview` and `ltp-rapidx/trading-verification` are compatibility tools. Prefer `ltp-rapidx/order/place-preview` and `ltp-rapidx/trade/verify-live` in new workflows.
 
 ## Read Workflow
 
@@ -71,6 +78,8 @@ All writes use this pattern:
 4. Ask for explicit consent for this one write.
 5. Submit the target write with the same business parameters plus `previewId` and `continueConsentId=<confirmation.submitToken>`.
 6. Query resulting state with the relevant read tool.
+
+If the preview response does not include `confirmation.submitToken`, do not submit the write. Re-run preview with the current CLI/MCP runtime or report the integration as stale.
 
 Order placement:
 
@@ -117,7 +126,7 @@ Common `targetCapabilityId` values are `position.set-leverage`, `position.close`
 
 ## Algo Orders
 
-Use preview/submit for `ltp-rapidx/algo/place`, `algo/amend`, and `algo/cancel`.
+Use preview/submit for `ltp-rapidx/algo/place`, `ltp-rapidx/algo/amend`, and `ltp-rapidx/algo/cancel`.
 
 Before placing TPSL or conditional orders:
 
@@ -160,10 +169,10 @@ If any step cannot be verified, return `NOT_VERIFIED`, `EXPECTED_ERROR`, or `FAI
 When MCP is unavailable, use direct CLI equivalents with `--json` and the same preview/submit discipline:
 
 ```bash
-rapidx order place-preview --json
-rapidx order place --json
-rapidx trade preview --json
-rapidx trade verify-live --json
+rapidx order place-preview --input '{"symbol":"BINANCE_PERP_BTC_USDT","side":"BUY","orderType":"LIMIT","price":"65000","quantity":"0.001","maxNotional":"100","clientOrderId":"example-001"}' --json
+rapidx order place --input '{"symbol":"BINANCE_PERP_BTC_USDT","side":"BUY","orderType":"LIMIT","price":"65000","quantity":"0.001","maxNotional":"100","clientOrderId":"example-001","previewId":"<previewId>","continueConsentId":"<confirmation.submitToken>"}' --json
+rapidx trade preview --input '{"targetCapabilityId":"position.set-leverage","params":{"symbol":"BINANCE_PERP_BTC_USDT","leverage":5}}' --json
+rapidx trade verify-live --input '{"symbol":"BINANCE_PERP_BTC_USDT","side":"BUY","maxNotional":"100","clientOrderId":"verify-001","explicitUserConsent":true}' --json
 ```
 
 Avoid shell chaining and wrapper scripts. Run commands from the agent workspace or use absolute paths supported by the host.
