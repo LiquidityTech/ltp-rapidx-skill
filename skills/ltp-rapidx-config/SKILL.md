@@ -115,6 +115,8 @@ MCP is started by the CLI. Add this server to the agent workspace MCP config:
 
 The MCP server command should be `rapidx` with args `["mcp", "serve"]` when `rapidx` is on the MCP host PATH. If PATH is not guaranteed, use the absolute path to the installed `rapidx` executable as `command` and keep args as `["mcp", "serve"]`. Do not point MCP tools at one-off CLI commands and do not add shell script wrappers.
 
+If a host CLI such as Hermes tries to run an interactive `mcp add` flow and blocks on prompts like enabling all tools, do not keep retrying it in a non-interactive terminal. Edit the confirmed workspace MCP config directly with the JSON above, then restart or reload the agent host and verify through real MCP tool discovery.
+
 ## Expected MCP Tools
 
 Healthy MCP discovery exposes 33 tools:

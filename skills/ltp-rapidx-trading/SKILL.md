@@ -84,12 +84,14 @@ All writes use this pattern:
 
 1. Call the write-specific preview tool.
 2. Read `previewId` and `confirmation.submitToken`.
-3. Show the user the actual preview summary, max notional, order id/client order id, and risk-relevant fields.
+3. Show the user the actual `requestSummary`, `businessParams`, max notional, order id/client order id, and `riskNotes`.
 4. Ask for explicit consent for this one write.
 5. Submit the target write with the same business parameters plus `previewId` and `continueConsentId=<confirmation.submitToken>`.
 6. Query resulting state with the relevant read tool.
 
 If the preview response does not include `confirmation.submitToken`, do not submit the write. Re-run preview with the current CLI/MCP runtime or report the integration as stale.
+
+`maxNotional` is a safety upper bound, not the target order amount. Before increasing quantity, amount, or notional to satisfy an exchange rule, check symbol `minNotional` and ask the user to confirm the new amount.
 
 Order placement:
 
@@ -133,6 +135,7 @@ Common `targetCapabilityId` values are `position.set-leverage`, `position.close`
 - PERP writes are leverage and margin sensitive.
 - Use a stable `clientOrderId` when the schema accepts one so status can be checked after a timeout.
 - Do not infer fills from placement. Confirm through `order/get`, `order/list`, `order/history`, or positions.
+- If a requested order is below the symbol `minNotional`, do not auto-increase to the minimum. Ask the user to approve the revised amount first.
 
 ## Algo Orders
 
@@ -151,6 +154,8 @@ Use separate explicit consent for each:
 - `rapidx/position/set-leverage` changes future risk for the symbol.
 - `rapidx/account/set-position-mode` changes account position mode and can affect existing workflows.
 - `rapidx/position/close` is a real close-position action. Verify current position first.
+
+Do not pass `side` or `quantity` to `position.close`. The close-position API determines BUY or SELL from the current position and closes the target symbol/positionSide. In NET mode, closing a long behaves like SELL and closing a short behaves like BUY. Treat `position.close` as a market close unless the tool schema explicitly exposes another order type, and verify the result with `rapidx/position/list`. Use a reduce-only order flow for partial closes. If `order/get` later shows `reduceOnly=false`, do not treat that alone as a failed close; `position.close` uses the RapidX close-position API and the order readback may not echo the reduce-only intent.
 
 Do not test these writes as part of ordinary setup.
 
@@ -181,7 +186,7 @@ When MCP is unavailable, use direct CLI equivalents with `--json` and the same p
 ```bash
 rapidx order place-preview --input '{"symbol":"BINANCE_PERP_BTC_USDT","side":"BUY","orderType":"LIMIT","price":"65000","quantity":"0.001","maxNotional":"100","clientOrderId":"example-001"}' --json
 rapidx order place --input '{"symbol":"BINANCE_PERP_BTC_USDT","side":"BUY","orderType":"LIMIT","price":"65000","quantity":"0.001","maxNotional":"100","clientOrderId":"example-001","previewId":"<previewId>","continueConsentId":"<confirmation.submitToken>"}' --json
-rapidx trade preview --input '{"targetCapabilityId":"position.set-leverage","params":{"symbol":"BINANCE_PERP_BTC_USDT","leverage":5}}' --json
+rapidx trade preview --input '{"targetCapabilityId":"position.set-leverage","symbol":"BINANCE_PERP_BTC_USDT","leverage":5}' --json
 rapidx trade verify-live --input '{"symbol":"BINANCE_PERP_BTC_USDT","side":"BUY","maxNotional":"100","clientOrderId":"verify-001","explicitUserConsent":true}' --json
 ```
 
