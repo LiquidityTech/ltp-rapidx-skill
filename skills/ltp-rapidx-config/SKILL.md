@@ -69,6 +69,7 @@ Verify the installed CLI:
 ```bash
 rapidx --version
 rapidx schema --json
+rapidx update check --json
 rapidx self-check --read-only --json
 ```
 
@@ -87,7 +88,7 @@ Before install, only choose a candidate path:
 After install/config, set one status:
 
 - `CLI_READY`: `rapidx --version` and `rapidx schema --json` pass.
-- `MCP_READY`: `CLI_READY`, `initialize` returns `serverInfo.name=rapidx`, `tools/list` shows 33 `rapidx/...` tools, and `rapidx/tools` plus `rapidx/self-check` can be called as MCP tools.
+- `MCP_READY`: `CLI_READY`, `initialize` returns `serverInfo.name=rapidx`, `tools/list` shows 34 `rapidx/...` tools, and `rapidx/tools`, `rapidx/update/check`, plus `rapidx/self-check` can be called as MCP tools.
 - `CLI_ONLY_READY`: `CLI_READY`, but the host cannot configure, discover, or call MCP tools.
 - `NOT_VERIFIED`: no real invocation evidence, or only a config file was edited.
 
@@ -119,10 +120,10 @@ If a host CLI such as Hermes tries to run an interactive `mcp add` flow and bloc
 
 ## Expected MCP Tools
 
-Healthy MCP discovery exposes 33 tools:
+Healthy MCP discovery exposes 34 tools:
 
 ```text
-Discovery: rapidx/tools, rapidx/self-check
+Discovery: rapidx/tools, rapidx/self-check, rapidx/update/check
 Market:    rapidx/market/get-ticker, rapidx/market/get-orderbook, rapidx/market/get-klines,
            rapidx/market/get-funding-rate, rapidx/market/get-mark-price,
            rapidx/market/get-symbol-info, rapidx/market/get-open-interest
@@ -147,10 +148,12 @@ The self-check proves the configured runtime is real. Do not simulate results, i
 Run the quick check:
 
 1. Confirm `CLI_READY` with `rapidx --version` and `rapidx schema --json`.
-2. If attempting MCP, discover tools through the MCP host and confirm the 33-tool inventory.
-3. Call `rapidx/self-check` with read-only scope when the host supports tool invocation.
-4. Call one public market route, preferably `rapidx/market/get-ticker` for `BINANCE_PERP_BTC_USDT`.
-5. Call read routes for account overview, portfolio balance, open orders, positions, and algo orders.
+2. Run `rapidx update check --json` during setup or review. This may read the GitHub release manifest and cache the result locally.
+3. If attempting MCP, discover tools through the MCP host and confirm the 34-tool inventory.
+4. Call `rapidx/update/check` when the host supports MCP tool invocation.
+5. Call `rapidx/self-check` with read-only scope when the host supports tool invocation. Use `checkUpdates=true` during setup or review.
+6. Call one public market route, preferably `rapidx/market/get-ticker` for `BINANCE_PERP_BTC_USDT`.
+7. Call read routes for account overview, portfolio balance, open orders, positions, and algo orders.
 
 If the host cannot invoke MCP tools yet, run equivalent CLI read-only checks and mark MCP tool invocation as `NOT_VERIFIED`; do not convert CLI success into MCP success.
 
@@ -158,23 +161,24 @@ Run the deeper review when asked for integration review or self-validation:
 
 ```text
 1. rapidx/tools
-2. rapidx/self-check
-3. rapidx/market/get-ticker
-4. rapidx/market/get-orderbook
-5. rapidx/market/get-klines
-6. rapidx/market/get-funding-rate
-7. rapidx/market/get-mark-price
-8. rapidx/market/get-symbol-info
-9. rapidx/market/get-open-interest
-10. rapidx/account/overview
-11. rapidx/account/balance with mode="portfolio"
-12. rapidx/account/balance with mode="account" only to classify key scope
-13. rapidx/order/list
-14. rapidx/order/history
-15. rapidx/order/get with a deliberately nonexistent self-check order id
-16. rapidx/position/list
-17. rapidx/position/history
-18. rapidx/algo/list
+2. rapidx/update/check
+3. rapidx/self-check with checkUpdates=true
+4. rapidx/market/get-ticker
+5. rapidx/market/get-orderbook
+6. rapidx/market/get-klines
+7. rapidx/market/get-funding-rate
+8. rapidx/market/get-mark-price
+9. rapidx/market/get-symbol-info
+10. rapidx/market/get-open-interest
+11. rapidx/account/overview
+12. rapidx/account/balance with mode="portfolio"
+13. rapidx/account/balance with mode="account" only to classify key scope
+14. rapidx/order/list
+15. rapidx/order/history
+16. rapidx/order/get with a deliberately nonexistent self-check order id
+17. rapidx/position/list
+18. rapidx/position/history
+19. rapidx/algo/list
 ```
 
 `mode="account"` may return a real permission or key-scope error for portfolio-scoped credentials. Treat that as `EXPECTED_ERROR`, not as a failed portfolio integration.
@@ -185,6 +189,8 @@ Run the deeper review when asked for integration review or self-validation:
 - `EXPECTED_ERROR`: route is live and returned a real business, permission, unsupported-mode, or deliberate not-found error.
 - `FAIL`: tool is missing, startup/auth/network failed, response is malformed, or a required call timed out.
 - `NOT_VERIFIED`: the agent could not invoke the tool or the user declined credentials.
+
+If update check returns `WRITE_BLOCKED`, `UPGRADE_REQUIRED`, or `skillsUpdateRecommended=true`, report it in the review. Do not run trading writes until a `WRITE_BLOCKED` or `UPGRADE_REQUIRED` CLI is upgraded and the MCP host is restarted.
 
 Every row must include `toolOrCommandEvidence` or equivalent observed code/message evidence. Empty order, position, or history lists are `PASS` if the response is real and well formed.
 
@@ -209,10 +215,17 @@ Return this structure when asked to review setup:
 - credentials: configured and masked / missing / not verified
 
 ## Tool Discovery
-- expected MCP tools: 33
+- expected MCP tools: 34
 - actual MCP tools:
 - missing tools:
 - legacy tools found:
+
+## Version And Upgrade
+- current CLI:
+- latest CLI:
+- minimum write version:
+- update status:
+- skills update recommended:
 
 ## Read-Only Checks
 | check | result | evidence |

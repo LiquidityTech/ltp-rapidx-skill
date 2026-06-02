@@ -28,6 +28,15 @@ Before any trading workflow, read the latest integration review from `ltp-rapidx
 
 Do not switch paths during a task without new evidence. If an MCP call fails after `MCP_READY`, mark MCP degraded and verify state before retrying or falling back to CLI.
 
+## Version Check
+
+At the start of a trading session or before the first write in a session, check the cached release status once:
+
+- `MCP_READY`: call `rapidx/update/check` or `rapidx/self-check` with `checkUpdates=true`.
+- `CLI_ONLY_READY`: run `rapidx update check --json`.
+
+Do not perform a fresh network update check before every trade submit. If the update result is `WRITE_BLOCKED` or `UPGRADE_REQUIRED`, stop all trade-write actions, upgrade the CLI, restart or reload the MCP host when applicable, and rerun self-check. If `skillsUpdateRecommended=true`, tell the user the skills should be reinstalled from GitHub, but do not block read-only work solely for that reason.
+
 ## Current MCP Surface
 
 Use `rapidx/tools` for the authoritative runtime schema. Current normal-use tool names are:
@@ -39,6 +48,7 @@ Market:   rapidx/market/get-ticker, rapidx/market/get-orderbook,
           rapidx/market/get-open-interest
 Account:  rapidx/account/overview, rapidx/account/balance,
           rapidx/account/set-position-mode
+Update:   rapidx/update/check
 Trade:    rapidx/trade/preview, rapidx/trade/verify-live
 Order:    rapidx/order/place-preview, rapidx/order/amend-preview,
           rapidx/order/cancel-preview, rapidx/order/place,

@@ -60,6 +60,8 @@ The skills guide the agent to install the npm CLI package and configure MCP with
 
 MCP is provided by the CLI command `rapidx mcp serve`; this repository contains skills only.
 
+For existing installations, run `rapidx update check --json` or call `rapidx/update/check` through MCP to detect CLI, MCP schema, and skills update advice. Reinstall these GitHub-distributed skills when the update result sets `skillsUpdateRecommended=true`.
+
 ## Repository Layout
 
 ```text
