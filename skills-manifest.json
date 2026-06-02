@@ -8,7 +8,7 @@
     {
       "name": "ltp-rapidx-config",
       "path": "skills/ltp-rapidx-config/SKILL.md",
-      "sha256": "91dccf5a749470711536c65d92bb8cb78feed6804d87649be30203a78af73543",
+      "sha256": "d561dfab38ef8fa1b8801110641920dffa0f0e7259a815c7db7ce3590cdc223b",
       "compatibleCli": ">=1.0.0",
       "compatibleMcpSchema": ">=1.0.0",
       "purpose": "configuration, credential guidance, tool discovery, self-check, access review"

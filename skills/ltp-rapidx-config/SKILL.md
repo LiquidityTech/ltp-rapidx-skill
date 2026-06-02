@@ -43,17 +43,16 @@ Offer alternatives when the user wants stronger isolation:
 Rules:
 
 - Required variables are `LTP_ACCESS_KEY`, `LTP_SECRET_KEY`, and `LTP_API_HOST`.
-- Default production host is `https://api.liquiditytech.com`.
+- `LTP_API_HOST` has no default. Use the API host provided for the current environment.
 - Do not use `LTP_BASE_URL`, `RAPIDX_BASE_URL`, or `RAPIDX_PORTFOLIO_*`.
 - Do not ask for or echo complete keys in normal chat text when a chat-secret mechanism is available.
 - Never print full keys in logs, config review, test output, or evidence. Use masked values only.
 
 ## CLI Install
 
-RapidX is published as an npm CLI package. Configure the GitHub Packages registry, then install the CLI:
+RapidX is published as an official npm package. Install the CLI:
 
 ```bash
-npm config set @liquiditytech:registry https://npm.pkg.github.com
 npm install -g @liquiditytech/rapidx-cli
 ```
 
@@ -107,7 +106,7 @@ MCP is started by the CLI. Add this server to the agent workspace MCP config:
       "env": {
         "LTP_ACCESS_KEY": "<user-provided-secret-or-env-reference>",
         "LTP_SECRET_KEY": "<user-provided-secret-or-env-reference>",
-        "LTP_API_HOST": "https://api.liquiditytech.com"
+        "LTP_API_HOST": "<user-provided-secret-or-env-reference>"
       }
     }
   }
