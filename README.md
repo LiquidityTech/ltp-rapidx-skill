@@ -249,3 +249,7 @@ skills-manifest.json
 ```
 
 This top-level `skills/` layout is intentional so `npx skills add` can discover the skills without requiring users to know internal package paths.
+
+## License
+
+MIT
