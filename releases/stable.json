@@ -1,7 +1,7 @@
 {
   "product": "rapidx",
   "channel": "stable",
-  "latestCliVersion": "1.0.26",
+  "latestCliVersion": "1.0.27",
   "minimumSupportedVersion": "1.0.20",
   "minimumWriteVersion": "1.0.24",
   "latestMcpSchemaVersion": "2026-05-23",
@@ -10,7 +10,7 @@
   "skillsUpdateRecommended": false,
   "severity": "none",
   "breaking": false,
-  "releaseNotesUrl": "https://github.com/LiquidityTech/ltp-rapidx-cli-mcp/releases/tag/v1.0.26",
+  "releaseNotesUrl": "https://www.npmjs.com/package/@liquiditytech/rapidx-cli/v/1.0.27",
   "upgrade": {
     "global": "npm install -g @liquiditytech/rapidx-cli@latest",
     "workspace": "npm install @liquiditytech/rapidx-cli@latest",
