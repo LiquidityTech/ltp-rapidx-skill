@@ -12,9 +12,9 @@ Use this skill after `ltp-rapidx-config` has confirmed the runtime path as `MCP_
 - Do not fake query or trading results. Every claim must come from an actual MCP tool or `rapidx ... --json` response, and final summaries must include `toolOrCommandEvidence` or equivalent observed evidence.
 - Do not use shell bridge scripts, temporary JavaScript scripts, directory-changing shell chains, or chained shell invocations.
 - Treat all trade-write tools as real production actions.
-- Never submit a write without preview evidence and explicit user consent for that specific write.
+- Never submit a write without preview evidence and explicit user consent for that specific write, unless the user has explicitly enabled RapidX automation mode for the current scope in chat.
 - Use `confirmation.submitToken` from the preview response as the submit `continueConsentId`.
-- Keep business parameters unchanged between preview and submit. If symbol, side, quantity, price, order id, leverage, or mode changes, create a new preview.
+- Keep business parameters unchanged between preview and submit. If symbol, side, positionSide, quantity, price, order id, leverage, or mode changes, create a new preview.
 - If a write times out or the result is uncertain, query state before retrying.
 - Never echo secrets.
 
@@ -39,7 +39,7 @@ Do not perform a fresh network update check before every trade submit. If the up
 
 ## Current MCP Surface
 
-Use `rapidx/tools` for the authoritative runtime schema. Current normal-use tool names are:
+Use `rapidx/tools` for the authoritative runtime schema. It returns the tool list plus concrete `inputSchemas`; read the relevant input schema before constructing write inputs. Current normal-use tool names are:
 
 ```text
 Market:   rapidx/market/get-ticker, rapidx/market/get-orderbook,
@@ -86,7 +86,10 @@ For a symbol, refresh market data:
 7. rapidx/market/get-open-interest     # PERP only
 ```
 
-Use recommended symbol format `BINANCE_PERP_<BASE>_<QUOTE>`, for example `BINANCE_PERP_BTC_USDT` or `BINANCE_PERP_ETH_USDT`. Inspect symbol info before placing or amending orders.
+Use RapidX symbol format `BINANCE_PERP_<BASE>_<QUOTE>`, for example `BINANCE_PERP_BTC_USDT` or `BINANCE_PERP_ETH_USDT`. `OKX_PERP_<BASE>_<QUOTE>` is supported for OKX perpetual instruments. If the user says an OKX swap symbol, `OKX_SWAP_<BASE>_<QUOTE>` is accepted as an input alias and normalizes to `OKX_PERP_<BASE>_<QUOTE>`. Market adapters may return `originalSymbol` for venue-native symbols such as `BTCUSDT` or `BTC-USDT-SWAP`.
+
+Inspect symbol info before placing or amending orders.
+For hedge-mode orders, pass `positionSide="LONG"` or `positionSide="SHORT"` in order placement, algo placement, set-leverage, or verify-live inputs when the schema exposes it. Do not call `rapidx/account/set-position-mode` just to choose an order side.
 
 ## Preview Then Submit
 
@@ -100,6 +103,10 @@ All writes use this pattern:
 6. Query resulting state with the relevant read tool.
 
 If the preview response does not include `confirmation.submitToken`, do not submit the write. Re-run preview with the current CLI/MCP runtime or report the integration as stale.
+
+Preview ids are runtime-local. Use MCP preview ids only with the same MCP server runtime. Use CLI preview ids only with the same CLI preview store. Do not cross-submit MCP preview ids through CLI, or CLI preview ids through MCP.
+
+Automation mode still requires preview. Only use it when the user explicitly enables RapidX automation mode in chat and states the scope. Add `automationMode=true` and the user's exact `automationConsentText` to the preview input. If the preview returns automation details and `confirmation.submitToken`, the agent may submit that preview without asking for another per-order chat confirmation within the authorized scope. Do not invent `automationConsentText`.
 
 `maxNotional` is a safety upper bound, not the target order amount. Before increasing quantity, amount, or notional to satisfy an exchange rule, check symbol `minNotional` and ask the user to confirm the new amount.
 
@@ -127,6 +134,8 @@ rapidx/order/cancel
 rapidx/order/list
 ```
 
+`rapidx/order/cancel` is asynchronous. If the result has `cancelAccepted=true` and `terminalStateConfirmed=false`, poll `rapidx/order/get` until `CANCELED`, `REJECTED`, `EXPIRED`, or timeout before claiming a final state.
+
 Non-order writes:
 
 ```text
@@ -140,12 +149,14 @@ Common `targetCapabilityId` values are `position.set-leverage`, `position.close`
 ## Order Rules
 
 - LIMIT order: requires quantity and price.
-- MARKET order: use only when the user explicitly authorizes market execution.
+- MARKET order: allowed after preview and explicit user authorization. Treat it as immediate execution with possible slippage and no guaranteed fill price.
 - SPOT MARKET by quote amount uses quote quantity semantics.
 - PERP writes are leverage and margin sensitive.
+- Hedge-mode order placement uses `positionSide="LONG"` or `positionSide="SHORT"` when needed.
 - Use a stable `clientOrderId` when the schema accepts one so status can be checked after a timeout.
 - Do not infer fills from placement. Confirm through `order/get`, `order/list`, `order/history`, or positions.
 - If a requested order is below the symbol `minNotional`, do not auto-increase to the minimum. Ask the user to approve the revised amount first.
+- Do not tell users that RapidX blocks all MARKET orders by default. Do not silently replace a requested MARKET order with a best-bid/best-ask LIMIT order.
 
 ## Algo Orders
 
@@ -153,8 +164,9 @@ Use preview/submit for `rapidx/algo/place`, `rapidx/algo/amend`, and `rapidx/alg
 
 Before placing TPSL or conditional orders:
 
-- Confirm target symbol, side, quantity, trigger price, stop/take-profit intent, and position side if hedge mode is used.
+- Confirm target symbol, side, quantity when required, trigger price, stop/take-profit intent, and position side if hedge mode is used.
 - For TPSL, require at least one valid take-profit or stop-loss trigger.
+- `conditionType="ENTIRE_CLOSE_POSITION"` may use `orderType="MARKET"` without `quantity` or `amount`.
 - After submit, verify through `rapidx/algo/list`.
 
 ## Position And Account Risk Writes
@@ -162,7 +174,7 @@ Before placing TPSL or conditional orders:
 Use separate explicit consent for each:
 
 - `rapidx/position/set-leverage` changes future risk for the symbol.
-- `rapidx/account/set-position-mode` changes account position mode and can affect existing workflows.
+- `rapidx/account/set-position-mode` changes account position mode and can affect existing workflows. Use it only when the user explicitly asks to change account position mode.
 - `rapidx/position/close` is a real close-position action. Verify current position first.
 
 Do not pass `side` or `quantity` to `position.close`. The close-position API determines BUY or SELL from the current position and closes the target symbol/positionSide. In NET mode, closing a long behaves like SELL and closing a short behaves like BUY. Treat `position.close` as a market close unless the tool schema explicitly exposes another order type, and verify the result with `rapidx/position/list`. Use a reduce-only order flow for partial closes. If `order/get` later shows `reduceOnly=false`, do not treat that alone as a failed close; `position.close` uses the RapidX close-position API and the order readback may not echo the reduce-only intent.
@@ -171,7 +183,7 @@ Do not test these writes as part of ordinary setup.
 
 ## Live Trading Verification
 
-Use `rapidx/trade/verify-live` only when the user explicitly asks for a small real-trade verification and authorizes symbol, exchange, amount cap, cleanup behavior, and test window. The tool input must include `acceptedRiskText` that names the exact symbol, side, maxNotional, real-order risk, and cancel cleanup behavior.
+Use `rapidx/trade/verify-live` only when the user explicitly asks for a small real-trade verification and authorizes symbol, exchange, amount cap, cleanup behavior, and test window. The tool input must include `acceptedRiskText` that names the exact symbol, side, positionSide when provided, maxNotional, real-order risk, and cancel cleanup behavior.
 
 The verification must include:
 
@@ -187,7 +199,7 @@ The verification must include:
 9. cleanup check for open orders, positions, and algo orders
 ```
 
-If any step cannot be verified, return `NOT_VERIFIED`, `EXPECTED_ERROR`, or `FAIL` with observed evidence. Do not call it successful without real evidence.
+If any step cannot be verified, return `NOT_VERIFIED`, `EXPECTED_ERROR`, `INVALID_INPUT`, `BLOCKED`, `NOT_FOUND`, `PERMISSION_SCOPE_ERROR`, `BUSINESS_ERROR`, or `FAIL` with observed evidence. Do not call it successful without real evidence.
 
 ## CLI Fallback
 

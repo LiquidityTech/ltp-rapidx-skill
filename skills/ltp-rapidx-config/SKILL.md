@@ -72,6 +72,8 @@ rapidx update check --json
 rapidx self-check --read-only --json
 ```
 
+`rapidx schema --json` and MCP `rapidx/tools` must return both `capabilities`/tool entries and concrete `inputSchemas`.
+
 For CLI-only agents, use direct `rapidx ... --json` commands. Do not create temporary bridge scripts, directory-changing shell chains, or shell command chaining for MCP access.
 
 ## Runtime Path Selection
@@ -146,7 +148,7 @@ The self-check proves the configured runtime is real. Do not simulate results, i
 
 Run the quick check:
 
-1. Confirm `CLI_READY` with `rapidx --version` and `rapidx schema --json`.
+1. Confirm `CLI_READY` with `rapidx --version` and `rapidx schema --json`, including readable `inputSchemas`.
 2. Run `rapidx update check --json` during setup or review. This may read the GitHub release manifest and cache the result locally.
 3. If attempting MCP, discover tools through the MCP host and confirm the 34-tool inventory.
 4. Call `rapidx/update/check` when the host supports MCP tool invocation.
@@ -186,6 +188,10 @@ Run the deeper review when asked for integration review or self-validation:
 
 - `PASS`: actual tool or command returned a successful real response.
 - `EXPECTED_ERROR`: route is live and returned a real business, permission, unsupported-mode, or deliberate not-found error.
+- `INVALID_INPUT`: schema or local input validation rejected the request before submission.
+- `NOT_FOUND`: deliberately requested resource does not exist, such as a self-check order id.
+- `PERMISSION_SCOPE_ERROR`: credentials are valid but do not cover the requested route or account scope.
+- `BUSINESS_ERROR`: RapidX or the venue returned a business-rule rejection.
 - `FAIL`: tool is missing, startup/auth/network failed, response is malformed, or a required call timed out.
 - `NOT_VERIFIED`: the agent could not invoke the tool or the user declined credentials.
 
