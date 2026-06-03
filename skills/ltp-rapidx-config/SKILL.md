@@ -189,7 +189,7 @@ Run the deeper review when asked for integration review or self-validation:
 - `PASS`: actual tool or command returned a successful real response.
 - `EXPECTED_ERROR`: route is live and returned a real business, permission, unsupported-mode, or deliberate not-found error.
 - `INVALID_INPUT`: schema or local input validation rejected the request before submission.
-- `NOT_FOUND`: deliberately requested resource does not exist, such as a self-check order id.
+- `NOT_FOUND`: a syntactically valid requested resource does not exist, such as a valid-format order id that RapidX cannot find.
 - `PERMISSION_SCOPE_ERROR`: credentials are valid but do not cover the requested route or account scope.
 - `BUSINESS_ERROR`: RapidX or the venue returned a business-rule rejection.
 - `FAIL`: tool is missing, startup/auth/network failed, response is malformed, or a required call timed out.

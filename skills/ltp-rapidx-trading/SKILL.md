@@ -201,6 +201,8 @@ The verification must include:
 
 If any step cannot be verified, return `NOT_VERIFIED`, `EXPECTED_ERROR`, `INVALID_INPUT`, `BLOCKED`, `NOT_FOUND`, `PERMISSION_SCOPE_ERROR`, `BUSINESS_ERROR`, or `FAIL` with observed evidence. Do not call it successful without real evidence.
 
+Order id checks have two layers: invalid `orderId` format is local `INVALID_INPUT`; valid-format but missing/non-open orders are discovered through RapidX readback during `order.get`, `order.amend-preview`, or `order.cancel-preview` and should be reported as `NOT_FOUND` or `BLOCKED` with evidence. If the user provides only `clientOrderId`, do not invent or validate an `orderId`.
+
 ## CLI Fallback
 
 When MCP is unavailable, use direct CLI equivalents with `--json` and the same preview/submit discipline:
