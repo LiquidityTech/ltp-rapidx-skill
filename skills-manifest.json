@@ -2,7 +2,7 @@
   "distributionName": "ltp-rapidx-skills",
   "distributionChannel": "github",
   "repository": "git+ssh://git@github.com/LiquidityTech/ltp-rapidx-skill.git",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "schemaVersion": "1.0.0",
   "skills": [
     {
