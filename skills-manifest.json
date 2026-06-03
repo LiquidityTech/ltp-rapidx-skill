@@ -16,7 +16,7 @@
     {
       "name": "ltp-rapidx-trading",
       "path": "skills/ltp-rapidx-trading/SKILL.md",
-      "sha256": "00606ee894be09090a3fbce39faae1300883d564c2c9df4ad1ce97faa562b9b6",
+      "sha256": "9e62d857d8f8e90102f072e2b21e6c7c2797cb6aa7c406699e74a13eedb4f30a",
       "compatibleCli": ">=1.0.0",
       "compatibleMcpSchema": ">=1.0.0",
       "purpose": "read queries, preview, real trading, status confirmation, small trade verification"

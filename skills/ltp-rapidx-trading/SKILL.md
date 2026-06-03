@@ -86,7 +86,7 @@ For a symbol, refresh market data:
 7. rapidx/market/get-open-interest     # PERP only
 ```
 
-Use symbol format `{EXCHANGE}_{TYPE}_{BASE}_{QUOTE}`, for example `BINANCE_PERP_BTC_USDT` or `OKX_PERP_BTC_USDT`. For OKX perpetuals, quantity is contract count; inspect symbol info before placing or amending orders.
+Use recommended symbol format `BINANCE_PERP_<BASE>_<QUOTE>`, for example `BINANCE_PERP_BTC_USDT` or `BINANCE_PERP_ETH_USDT`. Inspect symbol info before placing or amending orders.
 
 ## Preview Then Submit
 
@@ -171,7 +171,7 @@ Do not test these writes as part of ordinary setup.
 
 ## Live Trading Verification
 
-Use `rapidx/trade/verify-live` only when the user explicitly asks for a small real-trade verification and authorizes symbol, exchange, amount cap, cleanup behavior, and test window.
+Use `rapidx/trade/verify-live` only when the user explicitly asks for a small real-trade verification and authorizes symbol, exchange, amount cap, cleanup behavior, and test window. The tool input must include `acceptedRiskText` that names the exact symbol, side, maxNotional, real-order risk, and cancel cleanup behavior.
 
 The verification must include:
 
@@ -197,7 +197,7 @@ When MCP is unavailable, use direct CLI equivalents with `--json` and the same p
 rapidx order place-preview --input '{"symbol":"BINANCE_PERP_BTC_USDT","side":"BUY","orderType":"LIMIT","price":"65000","quantity":"0.001","maxNotional":"100","clientOrderId":"example-001"}' --json
 rapidx order place --input '{"symbol":"BINANCE_PERP_BTC_USDT","side":"BUY","orderType":"LIMIT","price":"65000","quantity":"0.001","maxNotional":"100","clientOrderId":"example-001","previewId":"<previewId>","continueConsentId":"<confirmation.submitToken>"}' --json
 rapidx trade preview --input '{"targetCapabilityId":"position.set-leverage","symbol":"BINANCE_PERP_BTC_USDT","leverage":5}' --json
-rapidx trade verify-live --input '{"symbol":"BINANCE_PERP_BTC_USDT","side":"BUY","maxNotional":"100","clientOrderId":"verify-001","explicitUserConsent":true}' --json
+rapidx trade verify-live --input '{"symbol":"BINANCE_PERP_BTC_USDT","side":"BUY","maxNotional":"100","clientOrderId":"verify-001","explicitUserConsent":true,"acceptedRiskText":"I authorize a real verification order for BINANCE_PERP_BTC_USDT BUY maxNotional 100 with cancel cleanup."}' --json
 ```
 
 Avoid shell chaining and wrapper scripts. Run commands from the agent workspace or use absolute paths supported by the host.
