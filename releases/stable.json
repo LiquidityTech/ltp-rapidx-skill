@@ -14,6 +14,6 @@
   "upgrade": {
     "global": "npm install -g @liquiditytech/rapidx-cli@latest",
     "workspace": "npm install @liquiditytech/rapidx-cli@latest",
-    "skills": "npx skills add git@github.com:LiquidityTech/ltp-rapidx-skill.git -a codex"
+    "skills": "See https://github.com/LiquidityTech/ltp-rapidx-skill#install for agent-specific skill upgrade commands."
   }
 }
