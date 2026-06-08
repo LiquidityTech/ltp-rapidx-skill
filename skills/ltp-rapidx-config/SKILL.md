@@ -153,7 +153,7 @@ Run the quick check:
 3. If attempting MCP, discover tools through the MCP host and confirm the 34-tool inventory.
 4. Call `rapidx/update/check` when the host supports MCP tool invocation.
 5. Call `rapidx/self-check` with read-only scope when the host supports tool invocation. Use `checkUpdates=true` during setup or review.
-6. Call one public market route, preferably `rapidx/market/get-ticker` for `BINANCE_PERP_BTC_USDT`.
+6. Call one public market route, preferably `rapidx/market/get-ticker` for `BINANCE_PERP_BTC_USDT`. If the user provides a Binance native symbol, normalize it before calling RapidX: `BTCUSDT` becomes `BINANCE_PERP_BTC_USDT`, and a Chinese base asset such as `币安人生USDT` becomes `BINANCE_PERP_币安人生_USDT`.
 7. Call read routes for account overview, portfolio balance, open orders, positions, and algo orders.
 
 If the host cannot invoke MCP tools yet, run equivalent CLI read-only checks and mark MCP tool invocation as `NOT_VERIFIED`; do not convert CLI success into MCP success.
