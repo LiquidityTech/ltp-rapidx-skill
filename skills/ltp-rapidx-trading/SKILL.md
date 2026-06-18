@@ -1,5 +1,6 @@
 ---
 name: ltp-rapidx-trading
+version: 1.0.7
 description: Use when an agent needs to operate RapidX through MCP or CLI for portfolio reads, market reads, order preview, order submit/replace/cancel, position management, algo orders, or explicit live trading verification.
 ---
 
@@ -35,7 +36,7 @@ At the start of a trading session or before the first write in a session, check 
 - `MCP_READY`: call `rapidx/update/check` or `rapidx/self-check` with `checkUpdates=true`.
 - `CLI_ONLY_READY`: run `rapidx update check --json`.
 
-Do not perform a fresh network update check before every trade submit. If the update result is `WRITE_BLOCKED` or `UPGRADE_REQUIRED`, stop all trade-write actions, upgrade the CLI, restart or reload the MCP host when applicable, and rerun self-check. If `skillsUpdateRecommended=true`, tell the user the skills should be reinstalled from GitHub, but do not block read-only work solely for that reason.
+Do not perform a fresh network update check before every trade submit. If the update result is `WRITE_BLOCKED`, `UPGRADE_REQUIRED`, or `skillsUpdateRecommended=true`, stop all trade-write actions and run `ltp-rapidx-config` upgrade handling first. Upgrade or reinstall skills first when their local frontmatter `version` is missing, stale, or unknown; then upgrade the CLI when needed, restart or reload the MCP host when applicable, and rerun self-check. Do not block read-only work solely because skills update is recommended.
 
 ## Current MCP Surface
 

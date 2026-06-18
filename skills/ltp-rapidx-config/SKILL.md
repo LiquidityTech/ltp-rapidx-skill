@@ -1,5 +1,6 @@
 ---
 name: ltp-rapidx-config
+version: 1.0.7
 description: Use when an agent needs to install or configure RapidX CLI/MCP access, set production LTP credentials, locate the agent workspace MCP config, review integration, discover tools, or run read-only self-checks.
 ---
 
@@ -75,6 +76,53 @@ rapidx self-check --read-only --json
 `rapidx schema --json` and MCP `rapidx/tools` must return both `capabilities`/tool entries and concrete `inputSchemas`.
 
 For CLI-only agents, use direct `rapidx ... --json` commands. Do not create temporary bridge scripts, directory-changing shell chains, or shell command chaining for MCP access.
+
+## Upgrade Existing Installation
+
+Use the CLI as the single version-check entrypoint. If `rapidx` is already available, run:
+
+```bash
+rapidx update check --json
+```
+
+Read these fields:
+
+- CLI: `currentVersion`, `latestVersion`, `status`, `updateAvailable`, `writeAllowed`, `upgrade.global`, `upgrade.workspace`.
+- Skills: `skillsVersion`, `currentSkillsVersion`, `skillsUpdateRecommended`, `upgrade.skills`.
+
+`currentSkillsVersion` is the CLI-bundled expected skills version, not proof of the agent's installed local skills. Inspect the installed or loaded `ltp-rapidx-config` and `ltp-rapidx-trading` frontmatter. Each current skill must declare `version`. Compare that local `version` with `skillsVersion` from `rapidx update check --json`. If the local version is missing, lower than `skillsVersion`, or cannot be read, update or reinstall both RapidX skills using the agent host's normal skill installer, then restart or reload the agent so the new skill content is loaded.
+
+Upgrade order:
+
+1. Update or reinstall both RapidX skills if their local `version` is stale, missing, or unknown.
+2. Restart or reload the agent so the new skills are active.
+3. Upgrade CLI when `updateAvailable=true`, `status=UPGRADE_REQUIRED`, or `status=WRITE_BLOCKED`.
+4. Restart or reload the MCP host when MCP is configured.
+5. Run `rapidx --version`, `rapidx update check --json`, and `rapidx self-check --read-only --json`.
+6. If MCP is supported, verify `rapidx/tools`, `rapidx/update/check`, and `rapidx/self-check`.
+
+Official npm CLI upgrade:
+
+```bash
+npm install -g @liquiditytech/rapidx-cli@latest
+```
+
+Workspace-local CLI upgrade:
+
+```bash
+npm install @liquiditytech/rapidx-cli@latest
+./node_modules/.bin/rapidx --version
+```
+
+If an environment intentionally installs the `@liquiditytech` scope from GitHub Packages, keep the default registry on official npm so public dependencies can resolve:
+
+```bash
+npm install -g @liquiditytech/rapidx-cli@latest \
+  --@liquiditytech:registry=https://npm.pkg.github.com \
+  --registry=https://registry.npmjs.org
+```
+
+Do not use `--registry=https://npm.pkg.github.com` as the only registry for CLI install or upgrade; dependencies such as `@modelcontextprotocol/sdk` are resolved from the public npm registry.
 
 ## Runtime Path Selection
 
