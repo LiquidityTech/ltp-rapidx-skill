@@ -1,6 +1,6 @@
 ---
 name: ltp-rapidx-trading
-description: Use when an agent needs to operate RapidX through MCP or CLI for account reads, market reads, order preview, order submit/amend/cancel, position management, algo orders, or explicit live trading verification.
+description: Use when an agent needs to operate RapidX through MCP or CLI for portfolio reads, market reads, order preview, order submit/replace/cancel, position management, algo orders, or explicit live trading verification.
 ---
 
 # RapidX Trading
@@ -24,7 +24,7 @@ Before any trading workflow, read the latest integration review from `ltp-rapidx
 
 - `MCP_READY`: use `rapidx/...` MCP tools and do not shell out to wrapper scripts.
 - `CLI_ONLY_READY`: use direct `rapidx ... --json` commands and do not claim MCP tools were called.
-- `NOT_VERIFIED` or only `CLI_READY`: stop and run config self-check before account, market, or trade workflows.
+- `NOT_VERIFIED` or only `CLI_READY`: stop and run config self-check before portfolio, market, or trade workflows.
 
 Do not switch paths during a task without new evidence. If an MCP call fails after `MCP_READY`, mark MCP degraded and verify state before retrying or falling back to CLI.
 
@@ -46,32 +46,38 @@ Market:   rapidx/market/get-ticker, rapidx/market/get-orderbook,
           rapidx/market/get-klines, rapidx/market/get-funding-rate,
           rapidx/market/get-mark-price, rapidx/market/get-symbol-info,
           rapidx/market/get-open-interest
-Account:  rapidx/account/overview, rapidx/account/balance,
-          rapidx/account/set-position-mode
+Portfolio: rapidx/portfolio/overview, rapidx/portfolio/assets,
+          rapidx/portfolio/statement, rapidx/portfolio/user-fee-rate,
+          rapidx/portfolio/position-bracket, rapidx/portfolio/set-position-mode
 Update:   rapidx/update/check
 Trade:    rapidx/trade/preview, rapidx/trade/verify-live
-Order:    rapidx/order/place-preview, rapidx/order/amend-preview,
+Order:    rapidx/order/place-preview, rapidx/order/replace-preview,
           rapidx/order/cancel-preview, rapidx/order/place,
-          rapidx/order/amend, rapidx/order/cancel,
-          rapidx/order/get, rapidx/order/list, rapidx/order/history
-Position: rapidx/position/list, rapidx/position/history,
-          rapidx/position/close, rapidx/position/set-leverage
-Algo:     rapidx/algo/place, rapidx/algo/amend,
-          rapidx/algo/cancel, rapidx/algo/list
+          rapidx/order/replace, rapidx/order/cancel,
+          rapidx/order/cancel-all, rapidx/order/query,
+          rapidx/order/open-orders, rapidx/order/history,
+          rapidx/order/executions
+Position: rapidx/position/query, rapidx/position/history,
+          rapidx/position/get-leverage, rapidx/position/close,
+          rapidx/position/close-all, rapidx/position/set-leverage
+Algo:     rapidx/algo/place, rapidx/algo/replace,
+          rapidx/algo/cancel, rapidx/algo/open-orders, rapidx/algo/query
 ```
 
 `rapidx/order/preview` and `rapidx/trading-verification` are compatibility tools. Prefer `rapidx/order/place-preview` and `rapidx/trade/verify-live` in new workflows.
+
+`open-orders` means current non-terminal orders, not "open an order". These orders may still be fillable, replaceable, or cancelable. `algo/open-orders` means current non-terminal algo orders such as conditional or TPSL orders that have not triggered, been canceled, or otherwise ended.
 
 ## Read Workflow
 
 Before making trading decisions, refresh state:
 
 ```text
-1. rapidx/account/overview
-2. rapidx/account/balance with mode="portfolio"
-3. rapidx/order/list
-4. rapidx/position/list
-5. rapidx/algo/list
+1. rapidx/portfolio/overview
+2. rapidx/portfolio/assets
+3. rapidx/order/open-orders
+4. rapidx/position/query
+5. rapidx/algo/open-orders
 ```
 
 For a symbol, refresh market data:
@@ -90,8 +96,8 @@ Use RapidX symbol format `BINANCE_PERP_<BASE>_<QUOTE>`, for example `BINANCE_PER
 
 Normalize user-facing Binance symbols before tool calls. If the user says `BTCUSDT`, `btcusdt`, or `BTC/USDT`, call RapidX with `BINANCE_PERP_BTC_USDT`. If the base asset contains Chinese characters, preserve the base exactly: `币安人生USDT` becomes `BINANCE_PERP_币安人生_USDT`. Do not translate Chinese base assets. Do not pass Binance native symbols directly as the `symbol` field. If exchange, type, base, or quote cannot be identified, ask the user to confirm the RapidX symbol first.
 
-Inspect symbol info before placing or amending orders.
-For hedge-mode orders, pass `positionSide="LONG"` or `positionSide="SHORT"` in order placement, algo placement, set-leverage, or verify-live inputs when the schema exposes it. Do not call `rapidx/account/set-position-mode` just to choose an order side.
+Inspect symbol info before placing or replacing orders.
+For hedge-mode orders, pass `positionSide="LONG"` or `positionSide="SHORT"` in order placement, algo placement, set-leverage, or verify-live inputs when the schema exposes it. Do not call `rapidx/portfolio/set-position-mode` just to choose an order side.
 
 ## Preview Then Submit
 
@@ -117,15 +123,15 @@ Order placement:
 ```text
 rapidx/order/place-preview
 rapidx/order/place
-rapidx/order/get or rapidx/order/list
+rapidx/order/query or rapidx/order/open-orders
 ```
 
-Order amend:
+Order replace:
 
 ```text
-rapidx/order/amend-preview
-rapidx/order/amend
-rapidx/order/get or rapidx/order/list
+rapidx/order/replace-preview
+rapidx/order/replace
+rapidx/order/query or rapidx/order/open-orders
 ```
 
 Order cancel:
@@ -133,10 +139,10 @@ Order cancel:
 ```text
 rapidx/order/cancel-preview
 rapidx/order/cancel
-rapidx/order/list
+rapidx/order/open-orders
 ```
 
-`rapidx/order/cancel` is asynchronous. If the result has `cancelAccepted=true` and `terminalStateConfirmed=false`, poll `rapidx/order/get` until `CANCELED`, `REJECTED`, `EXPIRED`, or timeout before claiming a final state.
+`rapidx/order/cancel` is asynchronous. If the result has `cancelAccepted=true` and `terminalStateConfirmed=false`, poll `rapidx/order/query` until `CANCELED`, `REJECTED`, `EXPIRED`, or timeout before claiming a final state.
 
 Non-order writes:
 
@@ -146,7 +152,7 @@ target tool, such as rapidx/position/set-leverage
 matching read-back tool
 ```
 
-Common `targetCapabilityId` values are `position.set-leverage`, `position.close`, `account.set-position-mode`, `algo.place`, `algo.amend`, and `algo.cancel`.
+Common `targetCapabilityId` values are `position.set-leverage`, `position.close`, `portfolio.set-position-mode`, `algo.place`, `algo.replace`, and `algo.cancel`.
 
 ## Order Rules
 
@@ -156,30 +162,30 @@ Common `targetCapabilityId` values are `position.set-leverage`, `position.close`
 - PERP writes are leverage and margin sensitive.
 - Hedge-mode order placement uses `positionSide="LONG"` or `positionSide="SHORT"` when needed.
 - Use a stable `clientOrderId` when the schema accepts one so status can be checked after a timeout.
-- Do not infer fills from placement. Confirm through `order/get`, `order/list`, `order/history`, or positions.
+- Do not infer fills from placement. Confirm through `order/query`, `order/open-orders`, `order/history`, executions, or positions.
 - If a requested order is below the symbol `minNotional`, do not auto-increase to the minimum. Ask the user to approve the revised amount first.
 - Do not tell users that RapidX blocks all MARKET orders by default. Do not silently replace a requested MARKET order with a best-bid/best-ask LIMIT order.
 
 ## Algo Orders
 
-Use preview/submit for `rapidx/algo/place`, `rapidx/algo/amend`, and `rapidx/algo/cancel`.
+Use preview/submit for `rapidx/algo/place`, `rapidx/algo/replace`, and `rapidx/algo/cancel`.
 
 Before placing TPSL or conditional orders:
 
 - Confirm target symbol, side, quantity when required, trigger price, stop/take-profit intent, and position side if hedge mode is used.
 - For TPSL, require at least one valid take-profit or stop-loss trigger.
 - `conditionType="ENTIRE_CLOSE_POSITION"` may use `orderType="MARKET"` without `quantity` or `amount`.
-- After submit, verify through `rapidx/algo/list`.
+- After submit, verify through `rapidx/algo/open-orders`.
 
-## Position And Account Risk Writes
+## Position And Portfolio Risk Writes
 
 Use separate explicit consent for each:
 
 - `rapidx/position/set-leverage` changes future risk for the symbol.
-- `rapidx/account/set-position-mode` changes account position mode and can affect existing workflows. Use it only when the user explicitly asks to change account position mode.
+- `rapidx/portfolio/set-position-mode` changes account position mode and can affect existing workflows. Use it only when the user explicitly asks to change account position mode.
 - `rapidx/position/close` is a real close-position action. Verify current position first.
 
-Do not pass `side` or `quantity` to `position.close`. The close-position API determines BUY or SELL from the current position and closes the target symbol/positionSide. In NET mode, closing a long behaves like SELL and closing a short behaves like BUY. Treat `position.close` as a market close unless the tool schema explicitly exposes another order type, and verify the result with `rapidx/position/list`. Use a reduce-only order flow for partial closes. If `order/get` later shows `reduceOnly=false`, do not treat that alone as a failed close; `position.close` uses the RapidX close-position API and the order readback may not echo the reduce-only intent.
+Do not pass `side` or `quantity` to `position.close`. The close-position API determines BUY or SELL from the current position and closes the target symbol/positionSide. In NET mode, closing a long behaves like SELL and closing a short behaves like BUY. Treat `position.close` as a market close unless the tool schema explicitly exposes another order type, and verify the result with `rapidx/position/query`. Use a reduce-only order flow for partial closes. If `order/query` later shows `reduceOnly=false`, do not treat that alone as a failed close; `position.close` uses the RapidX close-position API and the order readback may not echo the reduce-only intent.
 
 Do not test these writes as part of ordinary setup.
 
@@ -196,14 +202,14 @@ The verification must include:
 4. internal preview
 5. post-only or safely far-from-market limit submit
 6. order query
-7. amend when supported
+7. replace when supported
 8. cancel
 9. cleanup check for open orders, positions, and algo orders
 ```
 
 If any step cannot be verified, return `NOT_VERIFIED`, `EXPECTED_ERROR`, `INVALID_INPUT`, `BLOCKED`, `NOT_FOUND`, `PERMISSION_SCOPE_ERROR`, `BUSINESS_ERROR`, or `FAIL` with observed evidence. Do not call it successful without real evidence.
 
-Order id checks have two layers: invalid `orderId` format is local `INVALID_INPUT`; valid-format but missing/non-open orders are discovered through RapidX readback during `order.get`, `order.amend-preview`, or `order.cancel-preview` and should be reported as `NOT_FOUND` or `BLOCKED` with evidence. If the user provides only `clientOrderId`, do not invent or validate an `orderId`.
+Order id checks have two layers: invalid `orderId` format is local `INVALID_INPUT`; valid-format but missing/non-open orders are discovered through RapidX readback during `order.query`, `order.replace-preview`, or `order.cancel-preview` and should be reported as `NOT_FOUND` or `BLOCKED` with evidence. If the user provides only `clientOrderId`, do not invent or validate an `orderId`.
 
 ## CLI Fallback
 
@@ -223,6 +229,6 @@ Avoid shell chaining and wrapper scripts. Run commands from the agent workspace 
 For trading work, state:
 
 - Which real tools or commands were called.
-- Which account/order/position facts were verified.
+- Which portfolio/order/position facts were verified.
 - Whether the final state is open, filled, cancelled, closed, unchanged, or not verified.
 - Any remaining action the user must explicitly authorize.

@@ -5,7 +5,7 @@ description: Use when an agent needs to install or configure RapidX CLI/MCP acce
 
 # RapidX Config
 
-Use this skill for setup and integration review only. Use `ltp-rapidx-trading` for account, market, order, position, algo, and live trading workflows.
+Use this skill for setup and integration review only. Use `ltp-rapidx-trading` for portfolio, market, order, position, algo, and live trading workflows.
 
 ## Scope
 
@@ -89,7 +89,7 @@ Before install, only choose a candidate path:
 After install/config, set one status:
 
 - `CLI_READY`: `rapidx --version` and `rapidx schema --json` pass.
-- `MCP_READY`: `CLI_READY`, `initialize` returns `serverInfo.name=rapidx`, `tools/list` shows 34 `rapidx/...` tools, and `rapidx/tools`, `rapidx/update/check`, plus `rapidx/self-check` can be called as MCP tools.
+- `MCP_READY`: `CLI_READY`, `initialize` returns `serverInfo.name=rapidx`, `tools/list` shows 42 `rapidx/...` tools, and `rapidx/tools`, `rapidx/update/check`, plus `rapidx/self-check` can be called as MCP tools.
 - `CLI_ONLY_READY`: `CLI_READY`, but the host cannot configure, discover, or call MCP tools.
 - `NOT_VERIFIED`: no real invocation evidence, or only a config file was edited.
 
@@ -121,24 +121,31 @@ If a host CLI such as Hermes tries to run an interactive `mcp add` flow and bloc
 
 ## Expected MCP Tools
 
-Healthy MCP discovery exposes 34 tools:
+Healthy MCP discovery exposes 42 tools:
 
 ```text
 Discovery: rapidx/tools, rapidx/self-check, rapidx/update/check
 Market:    rapidx/market/get-ticker, rapidx/market/get-orderbook, rapidx/market/get-klines,
            rapidx/market/get-funding-rate, rapidx/market/get-mark-price,
            rapidx/market/get-symbol-info, rapidx/market/get-open-interest
-Account:   rapidx/account/overview, rapidx/account/balance, rapidx/account/set-position-mode
+Portfolio: rapidx/portfolio/overview, rapidx/portfolio/assets,
+           rapidx/portfolio/statement, rapidx/portfolio/user-fee-rate,
+           rapidx/portfolio/position-bracket, rapidx/portfolio/set-position-mode
 Trade:     rapidx/trade/preview, rapidx/trade/verify-live
 Order:     rapidx/order/preview, rapidx/order/place-preview,
-           rapidx/order/amend-preview, rapidx/order/cancel-preview,
-           rapidx/order/place, rapidx/order/amend, rapidx/order/cancel,
-           rapidx/order/get, rapidx/order/list, rapidx/order/history
-Position:  rapidx/position/list, rapidx/position/history,
-           rapidx/position/close, rapidx/position/set-leverage
-Algo:      rapidx/algo/place, rapidx/algo/amend, rapidx/algo/cancel, rapidx/algo/list
+           rapidx/order/replace-preview, rapidx/order/cancel-preview,
+           rapidx/order/place, rapidx/order/replace, rapidx/order/cancel,
+           rapidx/order/cancel-all, rapidx/order/query,
+           rapidx/order/open-orders, rapidx/order/history, rapidx/order/executions
+Position:  rapidx/position/query, rapidx/position/history,
+           rapidx/position/get-leverage, rapidx/position/close,
+           rapidx/position/close-all, rapidx/position/set-leverage
+Algo:      rapidx/algo/place, rapidx/algo/replace, rapidx/algo/cancel,
+           rapidx/algo/open-orders, rapidx/algo/query
 Compat:    rapidx/trading-verification
 ```
+
+`open-orders` means current non-terminal orders, not "open an order". These orders may still be fillable, replaceable, or cancelable. `algo/open-orders` means current non-terminal algo orders such as conditional or TPSL orders that have not triggered, been canceled, or otherwise ended.
 
 Legacy snake_case names such as `get_ticker`, `place_order`, or `list_positions` indicate a stale integration and should not be used.
 
@@ -150,11 +157,11 @@ Run the quick check:
 
 1. Confirm `CLI_READY` with `rapidx --version` and `rapidx schema --json`, including readable `inputSchemas`.
 2. Run `rapidx update check --json` during setup or review. This may read the GitHub release manifest and cache the result locally.
-3. If attempting MCP, discover tools through the MCP host and confirm the 34-tool inventory.
+3. If attempting MCP, discover tools through the MCP host and confirm the 42-tool inventory.
 4. Call `rapidx/update/check` when the host supports MCP tool invocation.
 5. Call `rapidx/self-check` with read-only scope when the host supports tool invocation. Use `checkUpdates=true` during setup or review.
 6. Call one public market route, preferably `rapidx/market/get-ticker` for `BINANCE_PERP_BTC_USDT`. If the user provides a Binance native symbol, normalize it before calling RapidX: `BTCUSDT` becomes `BINANCE_PERP_BTC_USDT`, and a Chinese base asset such as `币安人生USDT` becomes `BINANCE_PERP_币安人生_USDT`.
-7. Call read routes for account overview, portfolio balance, open orders, positions, and algo orders.
+7. Call read routes for portfolio overview, portfolio assets, open orders, positions, and algo orders.
 
 If the host cannot invoke MCP tools yet, run equivalent CLI read-only checks and mark MCP tool invocation as `NOT_VERIFIED`; do not convert CLI success into MCP success.
 
@@ -171,18 +178,18 @@ Run the deeper review when asked for integration review or self-validation:
 8. rapidx/market/get-mark-price
 9. rapidx/market/get-symbol-info
 10. rapidx/market/get-open-interest
-11. rapidx/account/overview
-12. rapidx/account/balance with mode="portfolio"
-13. rapidx/account/balance with mode="account" only to classify key scope
-14. rapidx/order/list
-15. rapidx/order/history
-16. rapidx/order/get with a deliberately nonexistent self-check order id
-17. rapidx/position/list
-18. rapidx/position/history
-19. rapidx/algo/list
+11. rapidx/portfolio/overview
+12. rapidx/portfolio/assets
+13. rapidx/order/open-orders
+14. rapidx/order/history
+15. rapidx/order/query with a deliberately nonexistent self-check order id
+16. rapidx/position/query
+17. rapidx/position/history
+18. rapidx/algo/open-orders
+19. rapidx/algo/query with a deliberately nonexistent self-check algo order id
 ```
 
-`mode="account"` may return a real permission or key-scope error for portfolio-scoped credentials. Treat that as `EXPECTED_ERROR`, not as a failed portfolio integration.
+Do not call removed `mode="account"` portfolio asset checks during setup. `rapidx/portfolio/assets` is the supported balance/assets read for portfolio credentials.
 
 ## Result Classes
 
@@ -190,7 +197,7 @@ Run the deeper review when asked for integration review or self-validation:
 - `EXPECTED_ERROR`: route is live and returned a real business, permission, unsupported-mode, or deliberate not-found error.
 - `INVALID_INPUT`: schema or local input validation rejected the request before submission.
 - `NOT_FOUND`: a syntactically valid requested resource does not exist, such as a valid-format order id that RapidX cannot find.
-- `PERMISSION_SCOPE_ERROR`: credentials are valid but do not cover the requested route or account scope.
+- `PERMISSION_SCOPE_ERROR`: credentials are valid but do not cover the requested route or portfolio scope.
 - `BUSINESS_ERROR`: RapidX or the venue returned a business-rule rejection.
 - `FAIL`: tool is missing, startup/auth/network failed, response is malformed, or a required call timed out.
 - `NOT_VERIFIED`: the agent could not invoke the tool or the user declined credentials.
@@ -220,7 +227,7 @@ Return this structure when asked to review setup:
 - credentials: configured and masked / missing / not verified
 
 ## Tool Discovery
-- expected MCP tools: 34
+- expected MCP tools: 42
 - actual MCP tools:
 - missing tools:
 - legacy tools found:
