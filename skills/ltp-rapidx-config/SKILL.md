@@ -1,6 +1,6 @@
 ---
 name: ltp-rapidx-config
-version: 1.0.7
+version: 1.0.8
 description: Use when an agent needs to install or configure RapidX CLI/MCP access, set production LTP credentials, locate the agent workspace MCP config, review integration, discover tools, or run read-only self-checks.
 ---
 
@@ -90,7 +90,19 @@ Read these fields:
 - CLI: `currentVersion`, `latestVersion`, `status`, `updateAvailable`, `writeAllowed`, `upgrade.global`, `upgrade.workspace`.
 - Skills: `skillsVersion`, `currentSkillsVersion`, `skillsUpdateRecommended`, `upgrade.skills`.
 
-`currentSkillsVersion` is the CLI-bundled expected skills version, not proof of the agent's installed local skills. Inspect the installed or loaded `ltp-rapidx-config` and `ltp-rapidx-trading` frontmatter. Each current skill must declare `version`. Compare that local `version` with `skillsVersion` from `rapidx update check --json`. If the local version is missing, lower than `skillsVersion`, or cannot be read, update or reinstall both RapidX skills using the agent host's normal skill installer, then restart or reload the agent so the new skill content is loaded.
+`currentSkillsVersion` is the CLI-bundled expected skills version, not proof of the agent's installed local skills. Inspect the installed or loaded `ltp-rapidx-config` and `ltp-rapidx-trading` frontmatter. Each current skill must declare `version`. When the local version is known, pass it into the check:
+
+```bash
+rapidx update check --input '{"installedSkillsVersion":"<local-skill-version>"}' --json
+```
+
+For upgrade review, force a remote manifest refresh:
+
+```bash
+rapidx update check --input '{"installedSkillsVersion":"<local-skill-version>","force":true}' --json
+```
+
+Compare the local `version` with `latestSkillsVersion` or legacy `skillsVersion` from `rapidx update check --json`. If the local version is missing, lower than the latest skills version, or cannot be read, update or reinstall both RapidX skills using the agent host's normal skill installer, then restart or reload the agent so the new skill content is loaded.
 
 Upgrade order:
 
