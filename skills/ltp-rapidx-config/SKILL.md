@@ -1,6 +1,6 @@
 ---
 name: ltp-rapidx-config
-version: 1.0.8
+version: 1.0.9
 description: Use when an agent needs to install or configure RapidX CLI/MCP access, set production LTP credentials, locate the agent workspace MCP config, review integration, discover tools, or run read-only self-checks.
 ---
 
@@ -126,16 +126,6 @@ npm install @liquiditytech/rapidx-cli@latest
 ./node_modules/.bin/rapidx --version
 ```
 
-If an environment intentionally installs the `@liquiditytech` scope from GitHub Packages, keep the default registry on official npm so public dependencies can resolve:
-
-```bash
-npm install -g @liquiditytech/rapidx-cli@latest \
-  --@liquiditytech:registry=https://npm.pkg.github.com \
-  --registry=https://registry.npmjs.org
-```
-
-Do not use `--registry=https://npm.pkg.github.com` as the only registry for CLI install or upgrade; dependencies such as `@modelcontextprotocol/sdk` are resolved from the public npm registry.
-
 ## Runtime Path Selection
 
 Classify the agent after CLI install and, when available, MCP configuration. Do not classify from agent product name or config file existence alone.
@@ -192,16 +182,18 @@ Portfolio: rapidx/portfolio/overview, rapidx/portfolio/assets,
            rapidx/portfolio/statement, rapidx/portfolio/user-fee-rate,
            rapidx/portfolio/position-bracket, rapidx/portfolio/set-position-mode
 Trade:     rapidx/trade/preview, rapidx/trade/verify-live
-Order:     rapidx/order/preview, rapidx/order/place-preview,
-           rapidx/order/replace-preview, rapidx/order/cancel-preview,
+Order:     rapidx/order/place-preview, rapidx/order/replace-preview,
+           rapidx/order/cancel-preview,
            rapidx/order/place, rapidx/order/replace, rapidx/order/cancel,
            rapidx/order/cancel-all, rapidx/order/query,
-           rapidx/order/open-orders, rapidx/order/history, rapidx/order/executions
+           rapidx/order/open-orders, rapidx/order/history
+Transactions:
+           rapidx/transaction/executions
 Position:  rapidx/position/query, rapidx/position/history,
            rapidx/position/get-leverage, rapidx/position/close,
            rapidx/position/close-all, rapidx/position/set-leverage
 Algo:      rapidx/algo/place, rapidx/algo/replace, rapidx/algo/cancel,
-           rapidx/algo/open-orders, rapidx/algo/query
+           rapidx/algo/open-orders, rapidx/algo/history, rapidx/algo/query
 Compat:    rapidx/trading-verification
 ```
 
@@ -246,7 +238,8 @@ Run the deeper review when asked for integration review or self-validation:
 16. rapidx/position/query
 17. rapidx/position/history
 18. rapidx/algo/open-orders
-19. rapidx/algo/query with a deliberately nonexistent self-check algo order id
+19. rapidx/algo/history
+20. rapidx/algo/query with a deliberately nonexistent self-check algo order id
 ```
 
 Do not call removed `mode="account"` portfolio asset checks during setup. `rapidx/portfolio/assets` is the supported balance/assets read for portfolio credentials.

@@ -1,6 +1,6 @@
 ---
 name: ltp-rapidx-trading
-version: 1.0.8
+version: 1.0.9
 description: Use when an agent needs to operate RapidX through MCP or CLI for portfolio reads, market reads, order preview, order submit/replace/cancel, position management, algo orders, or explicit live trading verification.
 ---
 
@@ -56,18 +56,21 @@ Order:    rapidx/order/place-preview, rapidx/order/replace-preview,
           rapidx/order/cancel-preview, rapidx/order/place,
           rapidx/order/replace, rapidx/order/cancel,
           rapidx/order/cancel-all, rapidx/order/query,
-          rapidx/order/open-orders, rapidx/order/history,
-          rapidx/order/executions
+          rapidx/order/open-orders, rapidx/order/history
+Transactions:
+          rapidx/transaction/executions
 Position: rapidx/position/query, rapidx/position/history,
           rapidx/position/get-leverage, rapidx/position/close,
           rapidx/position/close-all, rapidx/position/set-leverage
 Algo:     rapidx/algo/place, rapidx/algo/replace,
-          rapidx/algo/cancel, rapidx/algo/open-orders, rapidx/algo/query
+          rapidx/algo/cancel, rapidx/algo/open-orders,
+          rapidx/algo/history, rapidx/algo/query
 ```
 
-`rapidx/order/preview` and `rapidx/trading-verification` are compatibility tools. Prefer `rapidx/order/place-preview` and `rapidx/trade/verify-live` in new workflows.
+`rapidx/trading-verification` is a compatibility tool. Prefer `rapidx/trade/verify-live` in new workflows.
 
 `open-orders` means current non-terminal orders, not "open an order". These orders may still be fillable, replaceable, or cancelable. `algo/open-orders` means current non-terminal algo orders such as conditional or TPSL orders that have not triggered, been canceled, or otherwise ended.
+`rapidx/order/history` and `rapidx/algo/history` accept optional `begin` and `end` timestamps in milliseconds; if omitted, RapidX applies the upstream server default range.
 
 ## Read Workflow
 
@@ -79,6 +82,7 @@ Before making trading decisions, refresh state:
 3. rapidx/order/open-orders
 4. rapidx/position/query
 5. rapidx/algo/open-orders
+6. rapidx/transaction/executions when fills/transactions are needed
 ```
 
 For a symbol, refresh market data:
@@ -115,7 +119,7 @@ If the preview response does not include `confirmation.submitToken`, do not subm
 
 Preview ids are runtime-local. Use MCP preview ids only with the same MCP server runtime. Use CLI preview ids only with the same CLI preview store. Do not cross-submit MCP preview ids through CLI, or CLI preview ids through MCP.
 
-Automation mode still requires preview. Only use it when the user explicitly enables RapidX automation mode in chat and states the scope. Add `automationMode=true` and the user's exact `automationConsentText` to the preview input. If the preview returns automation details and `confirmation.submitToken`, the agent may submit that preview without asking for another per-order chat confirmation within the authorized scope. Do not invent `automationConsentText`.
+Automation mode still requires preview. Only use it when the user explicitly enables RapidX automation mode in chat and states the scope. Add `automationMode=true` and the user's exact `automationConsentText` to the preview input. If the preview returns automation details and `confirmation.submitToken`, the agent may submit that preview without asking for another per-order chat confirmation within the authorized scope. Do not invent `automationConsentText`. Treat automation as verified only when the preview response includes `automation.confirmationMode="automation-preview"`; generic or missing automation consent must be blocked before submit.
 
 `maxNotional` is a safety upper bound, not the target order amount. Before increasing quantity, amount, or notional to satisfy an exchange rule, check symbol `minNotional` and ask the user to confirm the new amount.
 
