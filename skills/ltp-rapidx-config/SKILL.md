@@ -1,6 +1,6 @@
 ---
 name: ltp-rapidx-config
-version: 1.0.9
+version: 1.0.10
 description: Use when an agent needs to install or configure RapidX CLI/MCP access, set production LTP credentials, locate the agent workspace MCP config, review integration, discover tools, or run read-only self-checks.
 ---
 
@@ -139,7 +139,7 @@ Before install, only choose a candidate path:
 After install/config, set one status:
 
 - `CLI_READY`: `rapidx --version` and `rapidx schema --json` pass.
-- `MCP_READY`: `CLI_READY`, `initialize` returns `serverInfo.name=rapidx`, `tools/list` shows 42 `rapidx/...` tools, and `rapidx/tools`, `rapidx/update/check`, plus `rapidx/self-check` can be called as MCP tools.
+- `MCP_READY`: `CLI_READY`, `initialize` returns `serverInfo.name=rapidx`, `tools/list` shows 47 `rapidx/...` tools, and `rapidx/tools`, `rapidx/update/check`, plus `rapidx/self-check` can be called as MCP tools.
 - `CLI_ONLY_READY`: `CLI_READY`, but the host cannot configure, discover, or call MCP tools.
 - `NOT_VERIFIED`: no real invocation evidence, or only a config file was edited.
 
@@ -171,7 +171,7 @@ If a host CLI such as Hermes tries to run an interactive `mcp add` flow and bloc
 
 ## Expected MCP Tools
 
-Healthy MCP discovery exposes 42 tools:
+Healthy MCP discovery exposes 47 tools:
 
 ```text
 Discovery: rapidx/tools, rapidx/self-check, rapidx/update/check
@@ -182,6 +182,10 @@ Portfolio: rapidx/portfolio/overview, rapidx/portfolio/assets,
            rapidx/portfolio/statement, rapidx/portfolio/user-fee-rate,
            rapidx/portfolio/position-bracket, rapidx/portfolio/set-position-mode
 Trade:     rapidx/trade/preview, rapidx/trade/verify-live
+Automation:
+           rapidx/automation/start, rapidx/automation/list,
+           rapidx/automation/status, rapidx/automation/extend,
+           rapidx/automation/stop
 Order:     rapidx/order/place-preview, rapidx/order/replace-preview,
            rapidx/order/cancel-preview,
            rapidx/order/place, rapidx/order/replace, rapidx/order/cancel,
@@ -209,7 +213,7 @@ Run the quick check:
 
 1. Confirm `CLI_READY` with `rapidx --version` and `rapidx schema --json`, including readable `inputSchemas`.
 2. Run `rapidx update check --json` during setup or review. This may read the GitHub release manifest and cache the result locally.
-3. If attempting MCP, discover tools through the MCP host and confirm the 42-tool inventory.
+3. If attempting MCP, discover tools through the MCP host and confirm the 47-tool inventory.
 4. Call `rapidx/update/check` when the host supports MCP tool invocation.
 5. Call `rapidx/self-check` with read-only scope when the host supports tool invocation. Use `checkUpdates=true` during setup or review.
 6. Call one public market route, preferably `rapidx/market/get-ticker` for `BINANCE_PERP_BTC_USDT`. If the user provides a Binance native symbol, normalize it before calling RapidX: `BTCUSDT` becomes `BINANCE_PERP_BTC_USDT`, and a Chinese base asset such as `币安人生USDT` becomes `BINANCE_PERP_币安人生_USDT`.
@@ -280,7 +284,7 @@ Return this structure when asked to review setup:
 - credentials: configured and masked / missing / not verified
 
 ## Tool Discovery
-- expected MCP tools: 42
+- expected MCP tools: 47
 - actual MCP tools:
 - missing tools:
 - legacy tools found:
