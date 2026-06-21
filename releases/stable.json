@@ -1,7 +1,7 @@
 {
   "product": "rapidx",
   "channel": "stable",
-  "latestCliVersion": "1.0.35",
+  "latestCliVersion": "1.0.34",
   "minimumSupportedVersion": "1.0.20",
   "minimumWriteVersion": "1.0.24",
   "latestMcpSchemaVersion": "2026-05-23",
@@ -10,10 +10,10 @@
   "skillsUpdateRecommended": false,
   "severity": "none",
   "breaking": false,
-  "releaseNotesUrl": "https://www.npmjs.com/package/@liquiditytech/rapidx-cli/v/1.0.35",
+  "releaseNotesUrl": "https://www.npmjs.com/package/@liquiditytech/rapidx-cli/v/1.0.34",
   "upgrade": {
-    "global": "npm install -g @liquiditytech/rapidx-cli@1.0.35",
-    "workspace": "npm install @liquiditytech/rapidx-cli@1.0.35",
+    "global": "npm install -g @liquiditytech/rapidx-cli@1.0.34",
+    "workspace": "npm install @liquiditytech/rapidx-cli@1.0.34",
     "skills": "See https://github.com/LiquidityTech/ltp-rapidx-skill#install for agent-specific skill upgrade commands."
   }
 }
