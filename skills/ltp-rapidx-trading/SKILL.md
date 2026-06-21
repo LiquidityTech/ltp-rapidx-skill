@@ -1,6 +1,6 @@
 ---
 name: ltp-rapidx-trading
-version: 1.0.10
+version: 1.0.11
 description: Use when an agent needs to operate RapidX through MCP or CLI for portfolio reads, market reads, order preview, order submit/replace/cancel, position management, algo orders, or explicit live trading verification.
 ---
 
@@ -140,7 +140,7 @@ Stopping automation blocks future automation previews/submits. It does not cance
 
 Automation notional accounting: `order.place` consumes notional by `maxNotional`; `order.replace` consumes the replacement order notional; `order.cancel` consumes no notional.
 
-`maxNotional` is a safety upper bound, not the target order amount. Before increasing quantity, amount, or notional to satisfy an exchange rule, check symbol `minNotional` and ask the user to confirm the new amount.
+`maxNotional` is a safety upper bound, not the target order quantity. Before increasing quantity or notional to satisfy an exchange rule, check symbol `minNotional` and ask the user to confirm the new quantity or notional.
 
 Order placement:
 
@@ -182,12 +182,12 @@ Common `targetCapabilityId` values are `position.set-leverage`, `position.close`
 
 - LIMIT order: requires quantity and price.
 - MARKET order: allowed after preview and explicit user authorization. Treat it as immediate execution with possible slippage and no guaranteed fill price.
-- SPOT MARKET by quote amount uses quote quantity semantics.
+- For RapidX PERP order placement, pass `quantity`. Do not use quote `amount`.
 - PERP writes are leverage and margin sensitive.
 - Hedge-mode order placement uses `positionSide="LONG"` or `positionSide="SHORT"` when needed.
 - Use a stable `clientOrderId` when the schema accepts one so status can be checked after a timeout.
 - Do not infer fills from placement. Confirm through `order/query`, `order/open-orders`, `order/history`, executions, or positions.
-- If a requested order is below the symbol `minNotional`, do not auto-increase to the minimum. Ask the user to approve the revised amount first.
+- If a requested order is below the symbol `minNotional`, do not auto-increase to the minimum. Ask the user to approve the revised quantity or notional first.
 - Do not tell users that RapidX blocks all MARKET orders by default. Do not silently replace a requested MARKET order with a best-bid/best-ask LIMIT order.
 
 ## Algo Orders
@@ -198,7 +198,7 @@ Before placing TPSL or conditional orders:
 
 - Confirm target symbol, side, quantity when required, trigger price, stop/take-profit intent, and position side if hedge mode is used.
 - For TPSL, require at least one valid take-profit or stop-loss trigger.
-- `conditionType="ENTIRE_CLOSE_POSITION"` may use `orderType="MARKET"` without `quantity` or `amount`.
+- `conditionType="ENTIRE_CLOSE_POSITION"` may use `orderType="MARKET"` without `quantity`.
 - After submit, verify through `rapidx/algo/open-orders`.
 
 ## Position And Portfolio Risk Writes
@@ -215,7 +215,7 @@ Do not test these writes as part of ordinary setup.
 
 ## Live Trading Verification
 
-Use `rapidx/trade/verify-live` only when the user explicitly asks for a small real-trade verification and authorizes symbol, exchange, amount cap, cleanup behavior, and test window. The tool input must include `acceptedRiskText` that names the exact symbol, side, positionSide when provided, maxNotional, real-order risk, and cancel cleanup behavior.
+Use `rapidx/trade/verify-live` only when the user explicitly asks for a small real-trade verification and authorizes symbol, exchange, notional cap, cleanup behavior, and test window. The tool input must include `acceptedRiskText` that names the exact symbol, side, positionSide when provided, maxNotional, real-order risk, and cancel cleanup behavior.
 
 The verification must include:
 
@@ -243,7 +243,7 @@ When MCP is unavailable, use direct CLI equivalents with `--json` and the same p
 rapidx order place-preview --input '{"symbol":"BINANCE_PERP_BTC_USDT","side":"BUY","orderType":"LIMIT","price":"65000","quantity":"0.001","maxNotional":"100","clientOrderId":"example-001"}' --json
 rapidx order place --input '{"symbol":"BINANCE_PERP_BTC_USDT","side":"BUY","orderType":"LIMIT","price":"65000","quantity":"0.001","maxNotional":"100","clientOrderId":"example-001","previewId":"<previewId>","continueConsentId":"<confirmation.submitToken>"}' --json
 rapidx automation start --input '{"symbols":["BINANCE_PERP_BTC_USDT"],"maxNotionalPerOrder":"100","maxTotalNotional":"1000","expiresInSeconds":3600,"allowedActions":["order.place","order.replace","order.cancel"],"allowedOrderTypes":["MARKET","LIMIT"],"explicitUserConsent":true,"acceptedRiskText":"I authorize RapidX automation for BINANCE_PERP_BTC_USDT with maxNotionalPerOrder 100 and maxTotalNotional 1000."}' --json
-rapidx order place-preview --input '{"automationSessionId":"<automationSessionId>","symbol":"BINANCE_PERP_BTC_USDT","side":"BUY","orderType":"MARKET","amount":"50","maxNotional":"60","clientOrderId":"auto-001"}' --json
+rapidx order place-preview --input '{"automationSessionId":"<automationSessionId>","symbol":"BINANCE_PERP_BTC_USDT","side":"BUY","orderType":"MARKET","quantity":"0.001","maxNotional":"60","clientOrderId":"auto-001"}' --json
 rapidx trade preview --input '{"targetCapabilityId":"position.set-leverage","symbol":"BINANCE_PERP_BTC_USDT","leverage":5}' --json
 rapidx trade verify-live --input '{"symbol":"BINANCE_PERP_BTC_USDT","side":"BUY","maxNotional":"100","clientOrderId":"verify-001","explicitUserConsent":true,"acceptedRiskText":"I authorize a real verification order for BINANCE_PERP_BTC_USDT BUY maxNotional 100 with cancel cleanup."}' --json
 ```
