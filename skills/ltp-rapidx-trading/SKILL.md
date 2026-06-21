@@ -1,6 +1,6 @@
 ---
 name: ltp-rapidx-trading
-version: 1.0.9
+version: 1.0.10
 description: Use when an agent needs to operate RapidX through MCP or CLI for portfolio reads, market reads, order preview, order submit/replace/cancel, position management, algo orders, or explicit live trading verification.
 ---
 
@@ -52,6 +52,10 @@ Portfolio: rapidx/portfolio/overview, rapidx/portfolio/assets,
           rapidx/portfolio/position-bracket, rapidx/portfolio/set-position-mode
 Update:   rapidx/update/check
 Trade:    rapidx/trade/preview, rapidx/trade/verify-live
+Automation:
+          rapidx/automation/start, rapidx/automation/list,
+          rapidx/automation/status, rapidx/automation/extend,
+          rapidx/automation/stop
 Order:    rapidx/order/place-preview, rapidx/order/replace-preview,
           rapidx/order/cancel-preview, rapidx/order/place,
           rapidx/order/replace, rapidx/order/cancel,
@@ -119,7 +123,22 @@ If the preview response does not include `confirmation.submitToken`, do not subm
 
 Preview ids are runtime-local. Use MCP preview ids only with the same MCP server runtime. Use CLI preview ids only with the same CLI preview store. Do not cross-submit MCP preview ids through CLI, or CLI preview ids through MCP.
 
-Automation mode still requires preview. Only use it when the user explicitly enables RapidX automation mode in chat and states the scope. Add `automationMode=true` and the user's exact `automationConsentText` to the preview input. If the preview returns automation details and `confirmation.submitToken`, the agent may submit that preview without asking for another per-order chat confirmation within the authorized scope. Do not invent `automationConsentText`. Treat automation as verified only when the preview response includes `automation.confirmationMode="automation-preview"`; generic or missing automation consent must be blocked before submit.
+Automation session still requires preview. Use it only when the user explicitly enables RapidX automation in chat and authorizes symbol, per-order max notional, total max notional, duration, allowed actions, and allowed order types. For normal order lifecycle automation, use `allowedActions=["order.place","order.replace","order.cancel"]`. First create a session with `rapidx/automation/start`; the input must include `explicitUserConsent=true` and `acceptedRiskText` copied from the user's authorization. Then add `automationSessionId` to order place/replace/cancel preview input. If the preview returns `automationSession.confirmationMode="automation-session"` and `confirmation.submitToken`, submit that preview without asking for another per-order chat confirmation. Do not invent automation scope. If no matching session exists, create one only after user authorization. If multiple sessions match, ask which session to use or pass the intended `automationSessionId`.
+
+Automation session flow:
+
+```text
+1. rapidx/automation/start with explicitUserConsent=true and acceptedRiskText from the user
+2. rapidx/order/place-preview, rapidx/order/replace-preview, or rapidx/order/cancel-preview with automationSessionId
+3. Submit the matching order write with the same business parameters plus previewId and continueConsentId
+4. rapidx/automation/status when the agent needs remaining session scope
+5. rapidx/automation/extend only after the user authorizes more time; include explicitUserConsent=true and a new acceptedRiskText
+6. rapidx/automation/stop when the user says to stop automation
+```
+
+Stopping automation blocks future automation previews/submits. It does not cancel existing orders.
+
+Automation notional accounting: `order.place` consumes notional by `maxNotional`; `order.replace` consumes the replacement order notional; `order.cancel` consumes no notional.
 
 `maxNotional` is a safety upper bound, not the target order amount. Before increasing quantity, amount, or notional to satisfy an exchange rule, check symbol `minNotional` and ask the user to confirm the new amount.
 
@@ -223,6 +242,8 @@ When MCP is unavailable, use direct CLI equivalents with `--json` and the same p
 ```bash
 rapidx order place-preview --input '{"symbol":"BINANCE_PERP_BTC_USDT","side":"BUY","orderType":"LIMIT","price":"65000","quantity":"0.001","maxNotional":"100","clientOrderId":"example-001"}' --json
 rapidx order place --input '{"symbol":"BINANCE_PERP_BTC_USDT","side":"BUY","orderType":"LIMIT","price":"65000","quantity":"0.001","maxNotional":"100","clientOrderId":"example-001","previewId":"<previewId>","continueConsentId":"<confirmation.submitToken>"}' --json
+rapidx automation start --input '{"symbols":["BINANCE_PERP_BTC_USDT"],"maxNotionalPerOrder":"100","maxTotalNotional":"1000","expiresInSeconds":3600,"allowedActions":["order.place","order.replace","order.cancel"],"allowedOrderTypes":["MARKET","LIMIT"],"explicitUserConsent":true,"acceptedRiskText":"I authorize RapidX automation for BINANCE_PERP_BTC_USDT with maxNotionalPerOrder 100 and maxTotalNotional 1000."}' --json
+rapidx order place-preview --input '{"automationSessionId":"<automationSessionId>","symbol":"BINANCE_PERP_BTC_USDT","side":"BUY","orderType":"MARKET","amount":"50","maxNotional":"60","clientOrderId":"auto-001"}' --json
 rapidx trade preview --input '{"targetCapabilityId":"position.set-leverage","symbol":"BINANCE_PERP_BTC_USDT","leverage":5}' --json
 rapidx trade verify-live --input '{"symbol":"BINANCE_PERP_BTC_USDT","side":"BUY","maxNotional":"100","clientOrderId":"verify-001","explicitUserConsent":true,"acceptedRiskText":"I authorize a real verification order for BINANCE_PERP_BTC_USDT BUY maxNotional 100 with cancel cleanup."}' --json
 ```
