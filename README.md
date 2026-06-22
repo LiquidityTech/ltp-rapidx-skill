@@ -16,7 +16,7 @@ Current release:
 
 The npm package is `@liquiditytech/rapidx-cli`. MCP is started by the CLI command `rapidx mcp serve`. This repository contains skills only.
 
-After installing the skills, ask your agent to load and follow `ltp-rapidx-config`. `ltp-rapidx-config` is a skill name, not a shell command.
+After installing the skills, ask your agent to load and follow `ltp-rapidx-config`.
 
 ## Runtime Model
 
@@ -44,22 +44,21 @@ You can install RapidX skills in two ways:
 
 Use the method that matches your agent host.
 
-| Agent | Recommended install method |
+| Agent | Install method |
 |---|---|
-| Codex | `$skill-installer`, or `npx skills add ... -a codex` |
-| Claude Code | `npx skills add ... -a claude-code`, or copy to `.claude/skills/` |
-| Cursor | `npx skills add ... -a cursor`, or copy to `.agents/skills/` / `.cursor/skills/` |
-| Gemini CLI | `npx skills add ... -a gemini-cli` only when your environment supports the general skills installer |
-| OpenCode | `npx skills add ... -a opencode`, or copy to OpenCode/Claude-compatible skill paths |
-| OpenClaw | `openclaw skills install <slug>` from ClawHub |
-| Hermes Agent | `hermes skills install LiquidityTech/ltp-rapidx-skill/skills/<name>` |
+| Codex | Use `$skill-installer`, or use the full Codex command below |
+| Claude Code | Use the full Claude Code command below, or copy to `.claude/skills/` |
+| Cursor | Use the full Cursor command below, or copy to `.agents/skills/` / `.cursor/skills/` |
+| Gemini CLI | Use the full Gemini CLI command below only when your environment supports the general skills installer |
+| OpenCode | Use the full OpenCode command below, or copy to OpenCode/Claude-compatible skill paths |
+| OpenClaw | Use the full OpenClaw commands below |
+| Hermes Agent | Use the full Hermes commands below |
 
 #### Codex
 
 ```bash
 npx skills add https://github.com/LiquidityTech/ltp-rapidx-skill.git \
-  --skill ltp-rapidx-config \
-  --skill ltp-rapidx-trading \
+  --skill ltp-rapidx-config ltp-rapidx-trading \
   -a codex -y
 ```
 
@@ -69,8 +68,7 @@ Codex also supports installing from another repo through `$skill-installer`. Ask
 
 ```bash
 npx skills add https://github.com/LiquidityTech/ltp-rapidx-skill.git \
-  --skill ltp-rapidx-config \
-  --skill ltp-rapidx-trading \
+  --skill ltp-rapidx-config ltp-rapidx-trading \
   -a claude-code -y
 ```
 
@@ -87,8 +85,7 @@ Manual install paths:
 
 ```bash
 npx skills add https://github.com/LiquidityTech/ltp-rapidx-skill.git \
-  --skill ltp-rapidx-config \
-  --skill ltp-rapidx-trading \
+  --skill ltp-rapidx-config ltp-rapidx-trading \
   -a cursor -y
 ```
 
@@ -96,8 +93,7 @@ npx skills add https://github.com/LiquidityTech/ltp-rapidx-skill.git \
 
 ```bash
 npx skills add https://github.com/LiquidityTech/ltp-rapidx-skill.git \
-  --skill ltp-rapidx-config \
-  --skill ltp-rapidx-trading \
+  --skill ltp-rapidx-config ltp-rapidx-trading \
   -a gemini-cli -y
 ```
 
@@ -107,20 +103,19 @@ Use this only when your Gemini CLI environment supports Agent Skills through the
 
 ```bash
 npx skills add https://github.com/LiquidityTech/ltp-rapidx-skill.git \
-  --skill ltp-rapidx-config \
-  --skill ltp-rapidx-trading \
+  --skill ltp-rapidx-config ltp-rapidx-trading \
   -a opencode -y
 ```
 
 Manual install paths include:
 
 ```text
-.opencode/skills/<name>/SKILL.md
-~/.config/opencode/skills/<name>/SKILL.md
-.claude/skills/<name>/SKILL.md
-~/.claude/skills/<name>/SKILL.md
-.agents/skills/<name>/SKILL.md
-~/.agents/skills/<name>/SKILL.md
+.opencode/skills/ltp-rapidx-config/SKILL.md
+.opencode/skills/ltp-rapidx-trading/SKILL.md
+~/.config/opencode/skills/ltp-rapidx-config/SKILL.md
+~/.config/opencode/skills/ltp-rapidx-trading/SKILL.md
+.agents/skills/ltp-rapidx-config/SKILL.md
+.agents/skills/ltp-rapidx-trading/SKILL.md
 ```
 
 #### OpenClaw
@@ -162,38 +157,44 @@ Use the SSH URL only when the repository is private or the agent host already ha
 
 Use this when you want the agent to install RapidX skills itself. Send only the block that matches your agent host.
 
+For every agent host, use the host's user-provided secret mechanism for API keys when available. Do not print or store full keys in public files, logs, screenshots, or normal chat output.
+
 Codex:
 
 ```text
-Install RapidX skills with Codex skill-installer from:
-https://github.com/LiquidityTech/ltp-rapidx-skill
+Install RapidX skills for this Codex workspace.
 
-Install these two paths:
-- skills/ltp-rapidx-config
-- skills/ltp-rapidx-trading
+Run:
+npx skills add https://github.com/LiquidityTech/ltp-rapidx-skill.git --skill ltp-rapidx-config ltp-rapidx-trading -a codex -y
 
-After installation, restart Codex if needed, then load and follow the installed `ltp-rapidx-config` skill. `ltp-rapidx-config` is not a shell command.
+After installation, follow ltp-rapidx-config first to install or upgrade @liquiditytech/rapidx-cli, configure credentials, configure MCP if supported, and run self-check.
+After RapidX is verified, follow ltp-rapidx-trading for market, portfolio, order, position, algo, and automation workflows.
 Use the agent host's user-provided secret mechanism for API keys when available. Do not print or store full keys in public files, logs, screenshots, or normal chat output.
 ```
 
 Claude Code:
 
 ```text
-Install RapidX skills for Claude Code:
+Install RapidX skills for this Claude Code workspace.
 
-npx skills add https://github.com/LiquidityTech/ltp-rapidx-skill.git --skill ltp-rapidx-config --skill ltp-rapidx-trading -a claude-code -y
+Run:
+npx skills add https://github.com/LiquidityTech/ltp-rapidx-skill.git --skill ltp-rapidx-config ltp-rapidx-trading -a claude-code -y
 
-If the installer is unavailable, install both skill folders under .claude/skills/. After installation, load and follow the installed `ltp-rapidx-config` skill. `ltp-rapidx-config` is not a shell command.
+If the installer is unavailable, install both skill folders under .claude/skills/.
+After installation, load ltp-rapidx-config first, complete CLI/MCP configuration and self-check, then use ltp-rapidx-trading for RapidX operations.
+Use the agent host's user-provided secret mechanism for API keys when available. Do not print or store full keys in public files, logs, screenshots, or normal chat output.
 ```
 
 Cursor:
 
 ```text
-Install RapidX skills for Cursor:
+Install RapidX skills for this Cursor workspace.
 
-npx skills add https://github.com/LiquidityTech/ltp-rapidx-skill.git --skill ltp-rapidx-config --skill ltp-rapidx-trading -a cursor -y
+Run:
+npx skills add https://github.com/LiquidityTech/ltp-rapidx-skill.git --skill ltp-rapidx-config ltp-rapidx-trading -a cursor -y
 
-After installation, load and follow the installed `ltp-rapidx-config` skill. `ltp-rapidx-config` is not a shell command.
+Use ltp-rapidx-config first to set up RapidX CLI/MCP and verify access, then use ltp-rapidx-trading for trading workflows.
+Use the agent host's user-provided secret mechanism for API keys when available. Do not print or store full keys in public files, logs, screenshots, or normal chat output.
 ```
 
 Gemini CLI:
@@ -201,19 +202,23 @@ Gemini CLI:
 ```text
 Install RapidX skills for Gemini CLI only if this environment supports Agent Skills through the general skills installer:
 
-npx skills add https://github.com/LiquidityTech/ltp-rapidx-skill.git --skill ltp-rapidx-config --skill ltp-rapidx-trading -a gemini-cli -y
+Run:
+npx skills add https://github.com/LiquidityTech/ltp-rapidx-skill.git --skill ltp-rapidx-config ltp-rapidx-trading -a gemini-cli -y
 
-If Agent Skills are unavailable, use RapidX CLI or MCP directly.
+If Agent Skills are unavailable, use @liquiditytech/rapidx-cli directly and run rapidx self-check --json before any trading workflow.
+Use the agent host's user-provided secret mechanism for API keys when available. Do not print or store full keys in public files, logs, screenshots, or normal chat output.
 ```
 
 OpenCode:
 
 ```text
-Install RapidX skills for OpenCode:
+Install RapidX skills for this OpenCode workspace.
 
-npx skills add https://github.com/LiquidityTech/ltp-rapidx-skill.git --skill ltp-rapidx-config --skill ltp-rapidx-trading -a opencode -y
+Run:
+npx skills add https://github.com/LiquidityTech/ltp-rapidx-skill.git --skill ltp-rapidx-config ltp-rapidx-trading -a opencode -y
 
-After installation, load and follow the installed `ltp-rapidx-config` skill. `ltp-rapidx-config` is not a shell command.
+Follow ltp-rapidx-config before any RapidX query or trading action.
+Use the agent host's user-provided secret mechanism for API keys when available. Do not print or store full keys in public files, logs, screenshots, or normal chat output.
 ```
 
 OpenClaw:
@@ -224,7 +229,8 @@ Install RapidX skills from ClawHub:
 openclaw skills install ltp-rapidx-config
 openclaw skills install ltp-rapidx-trading
 
-After installation, load and follow the installed `ltp-rapidx-config` skill. `ltp-rapidx-config` is not a shell command.
+After installation, follow ltp-rapidx-config first. Configure CLI/MCP access, run self-check, and only then use ltp-rapidx-trading.
+Use the agent host's user-provided secret mechanism for API keys when available. Do not print or store full keys in public files, logs, screenshots, or normal chat output.
 ```
 
 Hermes Agent:
@@ -235,7 +241,8 @@ Install RapidX skills for Hermes:
 hermes skills install LiquidityTech/ltp-rapidx-skill/skills/ltp-rapidx-config
 hermes skills install LiquidityTech/ltp-rapidx-skill/skills/ltp-rapidx-trading
 
-After installation, load and follow the installed `ltp-rapidx-config` skill. `ltp-rapidx-config` is not a shell command.
+After installation, follow ltp-rapidx-config first, then ltp-rapidx-trading.
+Use the agent host's user-provided secret mechanism for API keys when available. Do not print or store full keys in public files, logs, screenshots, or normal chat output.
 ```
 
 ## Expected Runtime
@@ -272,7 +279,7 @@ LTP_SECRET_KEY
 LTP_API_HOST
 ```
 
-`LTP_API_HOST` has no default. Use the API host provided by the environment or workspace owner.
+Use the API host provided by the environment or workspace owner.
 
 ## Check and Upgrade
 
@@ -290,12 +297,13 @@ rapidx/update/check
 
 Upgrade when the result reports a newer CLI or skills version.
 
-Recommended order:
+Upgrade order:
 
 1. Upgrade or reinstall RapidX skills.
 2. Upgrade RapidX CLI.
 3. Restart or reload the agent/MCP host.
-4. Run `rapidx self-check --json`.
+4. Run CLI self-check with `rapidx self-check --json`.
+5. If MCP is enabled, run MCP self-check with `rapidx/self-check`.
 
 For CLI upgrade:
 
@@ -325,7 +333,14 @@ Expected MCP tool count for this release: `46`.
 For small live-trade verification, use:
 
 ```bash
-rapidx trade verify-live --json
+rapidx trade verify-live --input '{
+  "symbol": "BINANCE_PERP_BTC_USDT",
+  "side": "BUY",
+  "maxNotional": "100",
+  "clientOrderId": "verify-live-001",
+  "explicitUserConsent": true,
+  "acceptedRiskText": "I authorize a real verification order for BINANCE_PERP_BTC_USDT BUY maxNotional 100 with cancel cleanup."
+}' --json
 ```
 
 This submits a real order and requires explicit user consent. Do not use it as a routine health check.
