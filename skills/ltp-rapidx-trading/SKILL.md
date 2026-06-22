@@ -38,7 +38,7 @@ Do not switch paths during a task without new evidence. If an MCP call fails aft
 
 At the start of a trading session or before the first write in a session, check the cached release status once:
 
-- `MCP_READY`: call `rapidx/update/check` or `rapidx/self-check` with `checkUpdates=true`.
+- `MCP_READY`: call `rapidx/update/check` once, then `rapidx/self-check`.
 - `CLI_ONLY_READY`: run `rapidx update check --json`.
 
 Do not perform a fresh network update check before every trade submit. If the update result is `WRITE_BLOCKED`, `UPGRADE_REQUIRED`, or `skillsUpdateRecommended=true`, stop all trade-write actions and run `ltp-rapidx-config` upgrade handling first. Upgrade or reinstall skills first when their local frontmatter `version` is missing, stale, or unknown; then upgrade the CLI when needed, restart or reload the MCP host when applicable, and rerun self-check. Do not block read-only work solely because skills update is recommended.
@@ -76,7 +76,7 @@ Algo:     rapidx/algo/place, rapidx/algo/replace,
           rapidx/algo/history, rapidx/algo/query
 ```
 
-`rapidx/trading-verification` is a compatibility tool. Prefer `rapidx/trade/verify-live` in new workflows.
+Use `rapidx/trade/verify-live` for small real-trade verification.
 
 `open-orders` means current non-terminal orders, not "open an order". These orders may still be fillable, replaceable, or cancelable. `algo/open-orders` means current non-terminal algo orders such as conditional or TPSL orders that have not triggered, been canceled, or otherwise ended.
 `rapidx/order/history` and `rapidx/algo/history` accept optional `begin` and `end` timestamps in milliseconds; if omitted, RapidX applies the upstream server default range.

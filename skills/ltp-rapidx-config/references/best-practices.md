@@ -8,7 +8,7 @@ RapidX is delivered as a complete Agent integration stack:
 - **CLI** is the unified local runtime for atomic operations and also starts the MCP server through `rapidx mcp serve`.
 - **MCP** is the structured tool surface for MCP-capable Agents and shares the same CLI/Core capabilities.
 
-The best practice is not to make users memorize every command. Let the Agent install and read the skills first, use `ltp-rapidx-config` to configure CLI/MCP and run self-checks, then use `ltp-rapidx-trading` for queries, preview, submit, automation, and readback.
+The best practice is not to make users memorize every command. Let the Agent install and read the skills first. Load the installed `ltp-rapidx-config` skill to configure CLI/MCP and run self-checks, then load `ltp-rapidx-trading` for queries, preview, submit, automation, and readback. Skill names are not shell commands.
 
 Recommended flow:
 
@@ -150,7 +150,7 @@ rapidx update check --json
 For CLI-only Agents, use JSON output:
 
 ```bash
-rapidx self-check --read-only --json
+rapidx self-check --json
 ```
 
 Avoid:
@@ -281,7 +281,7 @@ CLI path:
 
 ```bash
 rapidx update check --json
-rapidx self-check --read-only --json
+rapidx self-check --json
 rapidx portfolio overview --json
 rapidx portfolio assets --json
 rapidx order open-orders --json

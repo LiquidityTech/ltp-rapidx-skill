@@ -75,7 +75,7 @@ Verify the installed CLI:
 rapidx --version
 rapidx schema --json
 rapidx update check --json
-rapidx self-check --read-only --json
+rapidx self-check --json
 ```
 
 `rapidx schema --json` and MCP `rapidx/tools` must return both `capabilities`/tool entries and concrete `inputSchemas`.
@@ -115,7 +115,7 @@ Upgrade order:
 2. Restart or reload the agent so the new skills are active.
 3. Upgrade CLI when `updateAvailable=true`, `status=UPGRADE_REQUIRED`, or `status=WRITE_BLOCKED`.
 4. Restart or reload the MCP host when MCP is configured.
-5. Run `rapidx --version`, `rapidx update check --json`, and `rapidx self-check --read-only --json`.
+5. Run `rapidx --version`, `rapidx update check --json`, and `rapidx self-check --json`.
 6. If MCP is supported, verify `rapidx/tools`, `rapidx/update/check`, and `rapidx/self-check`.
 
 Official npm CLI upgrade:
@@ -144,7 +144,7 @@ Before install, only choose a candidate path:
 After install/config, set one status:
 
 - `CLI_READY`: `rapidx --version` and `rapidx schema --json` pass.
-- `MCP_READY`: `CLI_READY`, `initialize` returns `serverInfo.name=rapidx`, `tools/list` shows 47 `rapidx/...` tools, and `rapidx/tools`, `rapidx/update/check`, plus `rapidx/self-check` can be called as MCP tools.
+- `MCP_READY`: `CLI_READY`, `initialize` returns `serverInfo.name=rapidx`, `tools/list` shows 46 `rapidx/...` tools, and `rapidx/tools`, `rapidx/update/check`, plus `rapidx/self-check` can be called as MCP tools.
 - `CLI_ONLY_READY`: `CLI_READY`, but the host cannot configure, discover, or call MCP tools.
 - `NOT_VERIFIED`: no real invocation evidence, or only a config file was edited.
 
@@ -176,7 +176,7 @@ If a host CLI such as Hermes tries to run an interactive `mcp add` flow and bloc
 
 ## Expected MCP Tools
 
-Healthy MCP discovery exposes 47 tools:
+Healthy MCP discovery exposes 46 tools:
 
 ```text
 Discovery: rapidx/tools, rapidx/self-check, rapidx/update/check
@@ -203,7 +203,6 @@ Position:  rapidx/position/query, rapidx/position/history,
            rapidx/position/close-all, rapidx/position/set-leverage
 Algo:      rapidx/algo/place, rapidx/algo/replace, rapidx/algo/cancel,
            rapidx/algo/open-orders, rapidx/algo/history, rapidx/algo/query
-Compat:    rapidx/trading-verification
 ```
 
 `open-orders` means current non-terminal orders, not "open an order". These orders may still be fillable, replaceable, or cancelable. `algo/open-orders` means current non-terminal algo orders such as conditional or TPSL orders that have not triggered, been canceled, or otherwise ended.
@@ -218,9 +217,9 @@ Run the quick check:
 
 1. Confirm `CLI_READY` with `rapidx --version` and `rapidx schema --json`, including readable `inputSchemas`.
 2. Run `rapidx update check --json` during setup or review. This may read the GitHub release manifest and cache the result locally.
-3. If attempting MCP, discover tools through the MCP host and confirm the 47-tool inventory.
+3. If attempting MCP, discover tools through the MCP host and confirm the 46-tool inventory.
 4. Call `rapidx/update/check` when the host supports MCP tool invocation.
-5. Call `rapidx/self-check` with read-only scope when the host supports tool invocation. Use `checkUpdates=true` during setup or review.
+5. Call `rapidx/self-check` when the host supports MCP tool invocation.
 6. Call one public market route, preferably `rapidx/market/get-ticker` for `BINANCE_PERP_BTC_USDT`. If the user provides a Binance native symbol, normalize it before calling RapidX: `BTCUSDT` becomes `BINANCE_PERP_BTC_USDT`, and a Chinese base asset such as `币安人生USDT` becomes `BINANCE_PERP_币安人生_USDT`.
 7. Call read routes for portfolio overview, portfolio assets, open orders, positions, and algo orders.
 
@@ -231,7 +230,7 @@ Run the deeper review when asked for integration review or self-validation:
 ```text
 1. rapidx/tools
 2. rapidx/update/check
-3. rapidx/self-check with checkUpdates=true
+3. rapidx/self-check
 4. rapidx/market/get-ticker
 5. rapidx/market/get-orderbook
 6. rapidx/market/get-klines
@@ -289,7 +288,7 @@ Return this structure when asked to review setup:
 - credentials: configured and masked / missing / not verified
 
 ## Tool Discovery
-- expected MCP tools: 47
+- expected MCP tools: 46
 - actual MCP tools:
 - missing tools:
 - legacy tools found:

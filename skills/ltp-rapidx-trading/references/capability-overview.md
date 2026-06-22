@@ -17,10 +17,10 @@ Use `rapidx schema --json` or MCP `rapidx/tools` as the runtime source of truth.
 |---|---|
 | `rapidx --version` | - |
 | `rapidx schema --json` | `rapidx/tools` |
-| `rapidx update check` | `rapidx/update/check` |
+| `rapidx update check --json` | `rapidx/update/check` |
 | `rapidx auth check` | - |
 | `rapidx doctor --json` | - |
-| `rapidx self-check --read-only` | `rapidx/self-check` |
+| `rapidx self-check --json` | `rapidx/self-check` |
 | `rapidx mcp serve` | starts the MCP server |
 
 ## Automation
@@ -113,7 +113,6 @@ Automation sessions are local authorization sessions. They do not map to RapidX 
 |---|---|
 | `rapidx trade preview` | `rapidx/trade/preview` |
 | `rapidx trade verify-live` | `rapidx/trade/verify-live` |
-| `rapidx self-check trade-verify` | `rapidx/trading-verification` compatibility tool |
 
 Use `rapidx/trade/preview` for non-order writes such as `position.set-leverage`, `position.close`, `portfolio.set-position-mode`, `algo.place`, `algo.replace`, and `algo.cancel`.
 
@@ -148,4 +147,3 @@ OKX_PERP_BTC_USDT
 | `BUSINESS_ERROR` | RapidX or venue business rule rejected the request |
 | `NOT_VERIFIED` | Requested state could not be proven |
 | `FAIL` | Startup, auth, network, malformed response, or unexpected failure |
-
