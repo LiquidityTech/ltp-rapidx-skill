@@ -1,12 +1,17 @@
 ---
 name: ltp-rapidx-trading
-version: 1.0.11
+version: 1.0.12
 description: Use when an agent needs to operate RapidX through MCP or CLI for portfolio reads, market reads, order preview, order submit/replace/cancel, position management, algo orders, or explicit live trading verification.
 ---
 
 # RapidX Trading
 
 Use this skill after `ltp-rapidx-config` has confirmed the runtime path as `MCP_READY` or `CLI_ONLY_READY`. Prefer MCP tools only when the agent host is `MCP_READY`. Use direct CLI commands only when the confirmed path is `CLI_ONLY_READY`.
+
+## References
+
+- Read `references/capability-overview.md` when selecting a CLI command, MCP tool, capability id, or RapidX endpoint mapping.
+- Read `references/best-practices.md` when planning a full workflow across skills, CLI, MCP, preview, automation, and readback.
 
 ## Non-Negotiable Rules
 

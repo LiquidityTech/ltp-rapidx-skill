@@ -148,7 +148,7 @@ Install these two paths:
 - skills/ltp-rapidx-config
 - skills/ltp-rapidx-trading
 
-After installation, restart Codex if needed, then follow ltp-rapidx-config. Use the agent host's user-provided secret mechanism for API keys when available. Do not print or store full keys in public files, logs, screenshots, or normal chat output.
+After installation, restart Codex if needed, then load and follow the installed `ltp-rapidx-config` skill. It is not a shell command. Use the agent host's user-provided secret mechanism for API keys when available. Do not print or store full keys in public files, logs, screenshots, or normal chat output.
 ```
 
 Claude Code:
@@ -158,7 +158,7 @@ Install RapidX skills for Claude Code:
 
 npx skills add https://github.com/LiquidityTech/ltp-rapidx-skill.git --skill ltp-rapidx-config --skill ltp-rapidx-trading -a claude-code -y
 
-If the installer is unavailable, install both skill folders under .claude/skills/. After installation, follow ltp-rapidx-config.
+If the installer is unavailable, install both skill folders under .claude/skills/. After installation, load and follow the installed `ltp-rapidx-config` skill. It is not a shell command.
 ```
 
 Cursor:
@@ -168,7 +168,7 @@ Install RapidX skills for Cursor:
 
 npx skills add https://github.com/LiquidityTech/ltp-rapidx-skill.git --skill ltp-rapidx-config --skill ltp-rapidx-trading -a cursor -y
 
-After installation, follow ltp-rapidx-config.
+After installation, load and follow the installed `ltp-rapidx-config` skill. It is not a shell command.
 ```
 
 Gemini CLI:
@@ -188,7 +188,7 @@ Install RapidX skills for OpenCode:
 
 npx skills add https://github.com/LiquidityTech/ltp-rapidx-skill.git --skill ltp-rapidx-config --skill ltp-rapidx-trading -a opencode -y
 
-After installation, follow ltp-rapidx-config.
+After installation, load and follow the installed `ltp-rapidx-config` skill. It is not a shell command.
 ```
 
 OpenClaw:
@@ -199,7 +199,7 @@ Install RapidX skills from ClawHub:
 openclaw skills install ltp-rapidx-config
 openclaw skills install ltp-rapidx-trading
 
-After installation, follow ltp-rapidx-config.
+After installation, load and follow the installed `ltp-rapidx-config` skill. It is not a shell command.
 ```
 
 Hermes Agent:
@@ -210,7 +210,7 @@ Install RapidX skills for Hermes:
 hermes skills install LiquidityTech/ltp-rapidx-skill/skills/ltp-rapidx-config
 hermes skills install LiquidityTech/ltp-rapidx-skill/skills/ltp-rapidx-trading
 
-After installation, follow ltp-rapidx-config.
+After installation, load and follow the installed `ltp-rapidx-config` skill. It is not a shell command.
 ```
 
 ## Expected Runtime

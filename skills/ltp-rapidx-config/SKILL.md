@@ -1,6 +1,6 @@
 ---
 name: ltp-rapidx-config
-version: 1.0.11
+version: 1.0.12
 description: Use when an agent needs to install or configure RapidX CLI/MCP access, set production LTP credentials, locate the agent workspace MCP config, review integration, discover tools, or run read-only self-checks.
 ---
 
@@ -17,6 +17,11 @@ Use this skill for setup and integration review only. Use `ltp-rapidx-trading` f
 - Produce an integration review with masked credentials and actual evidence.
 
 Do not describe how to install this skill inside the skill itself. Assume the skill has already been installed by the agent host.
+
+## References
+
+- Read `references/capability-overview.md` when checking expected CLI commands, MCP tools, capability names, or endpoint coverage.
+- Read `references/best-practices.md` when doing a full RapidX Skills / CLI / MCP setup review or explaining the recommended external user flow.
 
 ## Workspace First
 
