@@ -1,6 +1,6 @@
 ---
 name: ltp-rapidx-trading
-version: 1.0.13
+version: 1.0.14
 description: Use when an agent needs to operate RapidX through MCP or CLI for portfolio reads, market reads, order preview, order submit/replace/cancel, position management, algo orders, or explicit live trading verification.
 ---
 
@@ -33,6 +33,8 @@ Before any trading workflow, read the latest integration review from `ltp-rapidx
 - `NOT_VERIFIED` or only `CLI_READY`: stop and run config self-check before portfolio, market, or trade workflows.
 
 Do not switch paths during a task without new evidence. If an MCP call fails after `MCP_READY`, mark MCP degraded and verify state before retrying or falling back to CLI.
+
+If MCP setup or discovery is missing, stale, or failing, stop trading setup work and return to `ltp-rapidx-config` MCP Config. Do not invent host-specific MCP add commands in this trading skill.
 
 ## Version Check
 

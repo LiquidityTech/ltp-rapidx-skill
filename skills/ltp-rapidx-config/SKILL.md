@@ -1,6 +1,6 @@
 ---
 name: ltp-rapidx-config
-version: 1.0.13
+version: 1.0.14
 description: Use when an agent needs to install or configure RapidX CLI/MCP access, set production LTP credentials, locate the agent workspace MCP config, review integration, discover tools, or run read-only self-checks.
 ---
 
@@ -172,7 +172,39 @@ MCP is started by the CLI. Add this server to the agent workspace MCP config:
 
 The MCP server command should be `rapidx` with args `["mcp", "serve"]` when `rapidx` is on the MCP host PATH. If PATH is not guaranteed, use the absolute path to the installed `rapidx` executable as `command` and keep args as `["mcp", "serve"]`. Do not point MCP tools at one-off CLI commands and do not add shell script wrappers.
 
-If a host CLI such as Hermes tries to run an interactive `mcp add` flow and blocks on prompts like enabling all tools, do not keep retrying it in a non-interactive terminal. Edit the confirmed workspace MCP config directly with the JSON above, then restart or reload the agent host and verify through real MCP tool discovery.
+Host-specific setup examples:
+
+```text
+Codex:
+  codex mcp add rapidx -- rapidx mcp serve
+
+Claude Code:
+  claude mcp add --transport stdio rapidx -- rapidx mcp serve
+
+Cursor:
+  Add to mcp.json:
+  {"mcpServers":{"rapidx":{"command":"rapidx","args":["mcp","serve"],"env":{"LTP_ACCESS_KEY":"<secret>","LTP_SECRET_KEY":"<secret>","LTP_API_HOST":"<secret>"}}}}
+
+Gemini CLI:
+  gemini mcp add rapidx rapidx -- mcp serve
+
+OpenCode:
+  Add to opencode.jsonc:
+  {"mcp":{"rapidx":{"type":"local","command":["rapidx","mcp","serve"],"enabled":true}}}
+
+OpenClaw:
+  openclaw mcp add rapidx --command rapidx --arg mcp --arg serve
+  openclaw mcp doctor rapidx --probe
+
+Hermes:
+  hermes mcp add rapidx --command rapidx --args mcp serve
+```
+
+For OpenClaw, use repeated `--arg` entries. Do not use `--args`.
+
+For Hermes, use a single `--args` and put `mcp serve` after it. Do not repeat `--args`, because Hermes treats the first `--args` as the start of the child command arguments.
+
+If a host CLI tries to run an interactive `mcp add` flow and blocks on prompts like enabling all tools, do not keep retrying it in a non-interactive terminal. Edit the confirmed workspace MCP config directly with the JSON above, then restart or reload the agent host and verify through real MCP tool discovery.
 
 ## Expected MCP Tools
 
