@@ -2,13 +2,13 @@
   "distributionName": "ltp-rapidx-skills",
   "distributionChannel": "github",
   "repository": "git+ssh://git@github.com/LiquidityTech/ltp-rapidx-skill.git",
-  "version": "1.0.14",
+  "version": "1.0.15",
   "schemaVersion": "1.0.0",
   "skills": [
     {
       "name": "ltp-rapidx-config",
       "path": "skills/ltp-rapidx-config/SKILL.md",
-      "sha256": "9e757b61a305f6275a97da715f27d6bb37d8695a44e652b07e515ee9bc8e4314",
+      "sha256": "5854c54a34d2c78197d07e6d81e182b4ecff61a6bb06add3edbb6822417758c4",
       "compatibleCli": ">=1.0.0",
       "compatibleMcpSchema": ">=1.0.0",
       "purpose": "configuration, credential guidance, tool discovery, self-check, access review"
@@ -16,7 +16,7 @@
     {
       "name": "ltp-rapidx-trading",
       "path": "skills/ltp-rapidx-trading/SKILL.md",
-      "sha256": "935032d8ddf54cc3b3f722ace5f2220e4ed5401780bf1c1ffe537a7a44fdeb5e",
+      "sha256": "cbe7e3361e9ee0cba64abf9636afa6c4a821f086f3afc0862c75e8f5397fa130",
       "compatibleCli": ">=1.0.0",
       "compatibleMcpSchema": ">=1.0.0",
       "purpose": "read queries, preview, real trading, status confirmation, small trade verification"
