@@ -7,7 +7,7 @@ Current release:
 | Component | Version |
 |---|---:|
 | RapidX CLI / MCP | `1.0.40` |
-| RapidX Skills | `1.0.15` |
+| RapidX Skills | `1.0.16` |
 
 ## What This Repo Provides
 
@@ -125,7 +125,7 @@ openclaw skills install ltp-rapidx-config
 openclaw skills install ltp-rapidx-trading
 ```
 
-The recommended OpenClaw path is ClawHub slug installation. Current ClawHub skill version: `1.0.15`.
+The recommended OpenClaw path is ClawHub slug installation. Current ClawHub skill version: `1.0.16`.
 
 #### Hermes Agent
 
