@@ -6,7 +6,7 @@ Current release:
 
 | Component | Version |
 |---|---:|
-| RapidX CLI / MCP | `1.0.39` |
+| RapidX CLI / MCP | `1.0.40` |
 | RapidX Skills | `1.0.15` |
 
 ## What This Repo Provides
